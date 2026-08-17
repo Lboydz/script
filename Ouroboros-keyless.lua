@@ -1,4 +1,4 @@
--- [[ UI GET KEY SCRIPT OURO ]] --
+-- [[ UI GET KEY SCRIPT  ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -77,9 +77,16 @@ UICorner.Parent = MainFrame
 
 local UIStroke = Instance.new("UIStroke")
 UIStroke.Thickness = 2.5
-UIStroke.Color = Color3.fromHex("#000000")
 UIStroke.Transparency = 0
 UIStroke.Parent = MainFrame
+
+task.spawn(function()
+    local hue = 0
+    while task.wait(0.03) do
+        hue = (hue + 0.01) % 1
+        UIStroke.Color = Color3.fromHSV(hue, 0.8, 1)
+    end
+end)
 
 -- Tiêu đề Menu
 local Title = Instance.new("TextLabel")
@@ -115,7 +122,7 @@ InputStroke.Parent = KeyInput
 -- Nút GET KEY VĨNH VIỄN (Chuyển sắc Gradient)
 local GetKeyBtn = Instance.new("TextButton")
 GetKeyBtn.Parent = MainFrame
-GetKeyBtn.Text = "GET KEY VĨNH VIỄN"
+GetKeyBtn.Text = "GET KEY VĨNH VIỄN ∞ "
 GetKeyBtn.Font = Enum.Font.GothamBold
 GetKeyBtn.TextSize = 12
 GetKeyBtn.TextColor3 = Color3.fromHex("#050811") -- Chữ xanh đen siêu tối
