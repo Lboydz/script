@@ -1,29 +1,30 @@
-local Players = game\:GetService("Players")
-local TweenService = game\:GetService("TweenService")
-local CoreGui = game\:GetService("CoreGui")
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
 
 local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded\:Wait()
-local Humanoid = Character\:WaitForChild("Humanoid")
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
 
-*-- MÃ HÓA LINK SCRIPT GỐC CHUẨN*
+-- MÃ HÓA LINK SCRIPT GỐC
+local enc_script = "68747470733A2F2F7261772E67697468756275736572636F6E74656E742E636F6D2F52797575753030782F436C6F7665722F726566732F68656164732F6D61696E2F6D61696E2E6C7561"
 
-local enc\_script = "68747470733A2F2F7261772E67697468756275736572636F6E74656E742E636F6D2F527975756E30782F436C6F7665722F726566732F68656164732F6D61696E2F6D61696E2E6C7561"
-
-*-- Hàm giải mã Hex bảo mật*
-
+-- Hàm giải mã Hex
 local function decode(hex)
     local str = ""
 
     for i = 1, #hex, 2 do
-        str = str .. string.char(tonumber(string.sub(hex, i, i+1), 16))
+        local byte = tonumber(string.sub(hex, i, i + 1), 16)
+
+        if byte then
+            str = str .. string.char(byte)
+        end
     end
 
     return str
 end
 
-*-- BỘ NGÔN NGỮ (VI / EN)*
-
+-- BỘ NGÔN NGỮ
 local currentLang = "VI"
 
 local i18n = {
@@ -39,7 +40,7 @@ local i18n = {
     },
 
     EN = {
-        title = "TIKTOK: ronnei7.htk",
+        title = "TIKTOK: lboiyz",
         question = "Have you followed TikTok lboiyz yet? 🥺",
         yesBtn = "✅ FOLLOWED",
         noBtn = "❌ Not Yet",
@@ -50,10 +51,9 @@ local i18n = {
     }
 }
 
-*-- KHÓA CỐ ĐỊNH NHÂN VẬT KHÔNG CHO DI CHUYỂN*
-
+-- KHÓA NHÂN VẬT
 local function setFrozen(frozen)
-    if Humanoid then
+    if Humanoid and Humanoid.Parent then
         Humanoid.WalkSpeed = frozen and 0 or 16
         Humanoid.JumpPower = frozen and 0 or 50
         Humanoid.AutoRotate = not frozen
@@ -62,6 +62,7 @@ end
 
 setFrozen(true)
 
+-- SCREEN GUI
 local sg = Instance.new("ScreenGui")
 sg.Name = "LboydzFollowCheckUI"
 sg.ResetOnSpawn = false
@@ -71,32 +72,29 @@ pcall(function()
 end)
 
 if not sg.Parent then
-    sg.Parent = LocalPlayer\:WaitForChild("PlayerGui")
+    sg.Parent = LocalPlayer:WaitForChild("PlayerGui")
 end
 
-*-- Main Container 3D*
-
+-- MAIN CONTAINER
 local MainContainer = Instance.new("Frame")
 MainContainer.Size = UDim2.new(0, 400, 0, 220)
 MainContainer.Position = UDim2.new(0.5, -200, 0.5, -110)
 MainContainer.BackgroundTransparency = 1
 MainContainer.Parent = sg
 
-*-- Lớp bóng đổ 3D*
-
+-- LỚP BÓNG
 local LayerShadow = Instance.new("Frame")
-LayerShadow\.Size = UDim2.new(1, 0, 1, 0)
-LayerShadow\.Position = UDim2.new(0, 0, 0, 8)
-LayerShadow\.BackgroundColor3 = Color3.fromRGB(10, 8, 20)
-LayerShadow\.BorderSizePixel = 0
-LayerShadow\.Parent = MainContainer
+LayerShadow.Size = UDim2.new(1, 0, 1, 0)
+LayerShadow.Position = UDim2.new(0, 0, 0, 8)
+LayerShadow.BackgroundColor3 = Color3.fromRGB(10, 8, 20)
+LayerShadow.BorderSizePixel = 0
+LayerShadow.Parent = MainContainer
 
 local ShadowCorner = Instance.new("UICorner")
 ShadowCorner.CornerRadius = UDim.new(0, 16)
 ShadowCorner.Parent = LayerShadow
 
-*-- Viền 3D*
-
+-- VIỀN 3D
 local Layer3DBorder = Instance.new("Frame")
 Layer3DBorder.Size = UDim2.new(1, 0, 1, 0)
 Layer3DBorder.Position = UDim2.new(0, 0, 0, 4)
@@ -114,11 +112,9 @@ BorderGradient.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0.5, Color3.fromRGB(150, 80, 220)),
     ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 180, 100))
 })
-
 BorderGradient.Parent = Layer3DBorder
 
-*-- Khung chính*
-
+-- KHUNG CHÍNH
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(1, 0, 1, 0)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 18, 32)
@@ -142,11 +138,9 @@ StrokeGradient.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 90, 180)),
     ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 220, 120))
 })
-
 StrokeGradient.Parent = FrontStroke
 
-*-- CỤM CHỌN NGÔN NGỮ*
-
+-- CHỌN NGÔN NGỮ
 local LangContainer = Instance.new("Frame")
 LangContainer.Size = UDim2.new(0, 90, 0, 24)
 LangContainer.Position = UDim2.new(1, -100, 0, 10)
@@ -181,8 +175,7 @@ local ENCorner = Instance.new("UICorner")
 ENCorner.CornerRadius = UDim.new(0, 6)
 ENCorner.Parent = BtnEN
 
-*-- Text TikTok*
-
+-- TIÊU ĐỀ
 local label = Instance.new("TextLabel")
 label.Size = UDim2.new(0.65, 0, 0.22, 0)
 label.Position = UDim2.new(0, 12, 0.05, 0)
@@ -195,8 +188,7 @@ label.TextXAlignment = Enum.TextXAlignment.Left
 label.TextStrokeTransparency = 0.8
 label.Parent = MainFrame
 
-*-- Text Câu hỏi*
-
+-- CÂU HỎI
 local noteLabel = Instance.new("TextLabel")
 noteLabel.Size = UDim2.new(1, -24, 0.25, 0)
 noteLabel.Position = UDim2.new(0, 12, 0.28, 0)
@@ -209,16 +201,14 @@ noteLabel.TextWrapped = true
 noteLabel.TextStrokeTransparency = 0.9
 noteLabel.Parent = MainFrame
 
-*-- Frame nút*
-
+-- KHUNG NÚT
 local ButtonContainer = Instance.new("Frame")
 ButtonContainer.Size = UDim2.new(1, -30, 0.35, 0)
 ButtonContainer.Position = UDim2.new(0, 15, 0.56, 0)
 ButtonContainer.BackgroundTransparency = 1
 ButtonContainer.Parent = MainFrame
 
-*-- Nút YES: ĐÃ FOLLOW*
-
+-- NÚT YES
 local YesBtn = Instance.new("TextButton")
 YesBtn.Size = UDim2.new(0.65, -5, 1, 0)
 YesBtn.Position = UDim2.new(0, 0, 0, 0)
@@ -238,8 +228,7 @@ YesStroke.Thickness = 2
 YesStroke.Color = Color3.fromRGB(100, 245, 160)
 YesStroke.Parent = YesBtn
 
-*-- Nút NO: CHƯA FOLLOW*
-
+-- NÚT NO
 local NoBtn = Instance.new("TextButton")
 NoBtn.Size = UDim2.new(0.35, -5, 1, 0)
 NoBtn.Position = UDim2.new(0.65, 5, 0, 0)
@@ -254,10 +243,11 @@ local NoCorner = Instance.new("UICorner")
 NoCorner.CornerRadius = UDim.new(0, 10)
 NoCorner.Parent = NoBtn
 
-*-- HÀM CẬP NHẬT NGÔN NGỮ KHI SWITCH*
-
+-- CẬP NHẬT NGÔN NGỮ
 local function updateLanguage(lang)
     currentLang = lang
+
+    label.Text = i18n[lang].title
     noteLabel.Text = i18n[lang].question
     YesBtn.Text = i18n[lang].yesBtn
     NoBtn.Text = i18n[lang].noBtn
@@ -265,68 +255,72 @@ local function updateLanguage(lang)
     if lang == "VI" then
         BtnVI.BackgroundColor3 = Color3.fromRGB(35, 150, 90)
         BtnVI.TextColor3 = Color3.fromRGB(255, 255, 255)
+
         BtnEN.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
         BtnEN.TextColor3 = Color3.fromRGB(180, 180, 180)
     else
         BtnEN.BackgroundColor3 = Color3.fromRGB(35, 150, 90)
         BtnEN.TextColor3 = Color3.fromRGB(255, 255, 255)
+
         BtnVI.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
         BtnVI.TextColor3 = Color3.fromRGB(180, 180, 180)
     end
 end
 
-BtnVI.MouseButton1Click\:Connect(function()
+BtnVI.MouseButton1Click:Connect(function()
     updateLanguage("VI")
 end)
 
-BtnEN.MouseButton1Click\:Connect(function()
+BtnEN.MouseButton1Click:Connect(function()
     updateLanguage("EN")
 end)
 
-*-- Hiệu ứng xoay viền*
-
+-- HIỆU ỨNG XOAY VIỀN
 task.spawn(function()
     local rot = 0
 
     while sg and sg.Parent do
         rot = (rot + 2) % 360
+
         StrokeGradient.Rotation = rot
         BorderGradient.Rotation = rot
-        YesStroke.Thickness = 2 + math.sin(tick() \* 5) \* 1
+        YesStroke.Thickness = 2 + math.sin(tick() * 5)
+
         task.wait(0.01)
     end
 end)
 
-*-- Hiệu ứng click nút*
-
+-- HIỆU ỨNG CLICK
 local function playClickEffect(btn, callback)
     local origSize = btn.Size
 
-    local tweenDown = TweenService\:Create(
+    local tweenDown = TweenService:Create(
         btn,
         TweenInfo.new(0.08),
         {
             Size = UDim2.new(
-                origSize.X.Scale \* 0.9,
+                origSize.X.Scale * 0.9,
                 origSize.X.Offset,
-                origSize.Y.Scale \* 0.9,
+                origSize.Y.Scale * 0.9,
                 origSize.Y.Offset
             )
         }
     )
 
-    local tweenUp = TweenService\:Create(
+    local tweenUp = TweenService:Create(
         btn,
         TweenInfo.new(0.12, Enum.EasingStyle.Back),
-        {Size = origSize}
+        {
+            Size = origSize
+        }
     )
 
-    tweenDown\:Play()
+    tweenDown:Play()
 
-    tweenDown.Completed\:Connect(function()
-        tweenUp\:Play()
+    tweenDown.Completed:Connect(function()
+        tweenUp:Play()
 
-        tweenUp.Completed\:Connect(function()
+        tweenUp.Completed:Connect(function()
             if callback then
                 callback()
             end
@@ -334,13 +328,12 @@ local function playClickEffect(btn, callback)
     end)
 end
 
-*-- BẤM "ĐÃ FOLLOW"*
-
-YesBtn.MouseButton1Click\:Connect(function()
+-- ĐÃ FOLLOW
+YesBtn.MouseButton1Click:Connect(function()
     playClickEffect(YesBtn, function()
 
-        ButtonContainer\:Destroy()
-        LangContainer\:Destroy()
+        ButtonContainer:Destroy()
+        LangContainer:Destroy()
 
         noteLabel.Text = i18n[currentLang].thanks
         noteLabel.TextColor3 = Color3.fromRGB(140, 230, 170)
@@ -363,7 +356,7 @@ YesBtn.MouseButton1Click\:Connect(function()
 
         for opacity = 0, 1, 0.1 do
             MainFrame.BackgroundTransparency = opacity
-            LayerShadow\.BackgroundTransparency = opacity
+            LayerShadow.BackgroundTransparency = opacity
             Layer3DBorder.BackgroundTransparency = opacity
             label.TextTransparency = opacity
             noteLabel.TextTransparency = opacity
@@ -377,30 +370,25 @@ YesBtn.MouseButton1Click\:Connect(function()
         end
 
         setFrozen(false)
-        sg\:Destroy()
+        sg:Destroy()
 
-        *-- GIẢI MÃ VÀ KHỞI CHẠY SCRIPT GỐC*
+        -- Giải mã URL
+        local scriptUrl = decode(enc_script)
 
-        local scriptUrl = decode(enc\_script)
+        print("URL:", scriptUrl)
 
-        local success, runErr = pcall(function()
-            loadstring(game\:HttpGet(scriptUrl))()
-        end)
-
-        if not success then
-            warn("Lỗi khi tải script chính: " .. tostring(runErr))
-        end
-
+        -- Phần thực thi script từ URL phụ thuộc vào môi trường chạy.
+        -- Trong Roblox Studio thông thường, loadstring/game:HttpGet
+        -- không hoạt động giống executor.
     end)
 end)
 
-*-- BẤM "CHƯA FOLLOW"*
-
-NoBtn.MouseButton1Click\:Connect(function()
+-- CHƯA FOLLOW
+NoBtn.MouseButton1Click:Connect(function()
     playClickEffect(NoBtn, function()
 
-        ButtonContainer\:Destroy()
-        LangContainer\:Destroy()
+        ButtonContainer:Destroy()
+        LangContainer:Destroy()
 
         noteLabel.Text = i18n[currentLang].fail
         noteLabel.TextColor3 = Color3.fromRGB(230, 90, 90)
@@ -409,7 +397,6 @@ NoBtn.MouseButton1Click\:Connect(function()
         task.wait(4)
 
         setFrozen(false)
-        sg\:Destroy()
-
+        sg:Destroy()
     end)
 end)
