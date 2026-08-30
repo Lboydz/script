@@ -7,24 +7,26 @@ local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 
 -- MÃ HÓA LINK SCRIPT GỐC
-local enc_script = "68747470733A2F2F7261772E67697468756275736572636F6E74656E742E636F6D2F52797575753030782F436C6F7665722F726566732F68656164732F6D61696E2F6D61696E2E6C7561"
+local enc_script = "68747470733A2F2F7261772E67697468756275736572636F6E74656E742E636F6D2F527975756E30782F436C6F7665722F726566732F68656164732F6D61696E2F6D61696E2E6C7561"
 
--- Hàm giải mã Hex
+-- GIẢI MÃ HEX
 local function decode(hex)
     local str = ""
 
     for i = 1, #hex, 2 do
-        local byte = tonumber(string.sub(hex, i, i + 1), 16)
+        local byte = tonumber(hex:sub(i, i + 1), 16)
 
-        if byte then
-            str = str .. string.char(byte)
+        if not byte then
+            return nil, "Chuỗi Hex không hợp lệ"
         end
+
+        str = str .. string.char(byte)
     end
 
     return str
 end
 
--- BỘ NGÔN NGỮ
+-- NGÔN NGỮ
 local currentLang = "VI"
 
 local i18n = {
@@ -82,7 +84,7 @@ MainContainer.Position = UDim2.new(0.5, -200, 0.5, -110)
 MainContainer.BackgroundTransparency = 1
 MainContainer.Parent = sg
 
--- LỚP BÓNG
+-- SHADOW
 local LayerShadow = Instance.new("Frame")
 LayerShadow.Size = UDim2.new(1, 0, 1, 0)
 LayerShadow.Position = UDim2.new(0, 0, 0, 8)
@@ -149,7 +151,6 @@ LangContainer.Parent = MainFrame
 
 local BtnVI = Instance.new("TextButton")
 BtnVI.Size = UDim2.new(0.48, 0, 1, 0)
-BtnVI.Position = UDim2.new(0, 0, 0, 0)
 BtnVI.BackgroundColor3 = Color3.fromRGB(35, 150, 90)
 BtnVI.Text = "🇻🇳 VI"
 BtnVI.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -208,10 +209,9 @@ ButtonContainer.Position = UDim2.new(0, 15, 0.56, 0)
 ButtonContainer.BackgroundTransparency = 1
 ButtonContainer.Parent = MainFrame
 
--- NÚT YES
+-- YES
 local YesBtn = Instance.new("TextButton")
 YesBtn.Size = UDim2.new(0.65, -5, 1, 0)
-YesBtn.Position = UDim2.new(0, 0, 0, 0)
 YesBtn.BackgroundColor3 = Color3.fromRGB(35, 150, 90)
 YesBtn.Text = i18n[currentLang].yesBtn
 YesBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -228,7 +228,7 @@ YesStroke.Thickness = 2
 YesStroke.Color = Color3.fromRGB(100, 245, 160)
 YesStroke.Parent = YesBtn
 
--- NÚT NO
+-- NO
 local NoBtn = Instance.new("TextButton")
 NoBtn.Size = UDim2.new(0.35, -5, 1, 0)
 NoBtn.Position = UDim2.new(0.65, 5, 0, 0)
@@ -275,16 +275,16 @@ BtnEN.MouseButton1Click:Connect(function()
     updateLanguage("EN")
 end)
 
--- HIỆU ỨNG XOAY VIỀN
+-- XOAY VIỀN
 task.spawn(function()
     local rot = 0
 
-    while sg and sg.Parent do
+    while sg.Parent do
         rot = (rot + 2) % 360
 
         StrokeGradient.Rotation = rot
         BorderGradient.Rotation = rot
-        YesStroke.Thickness = 2 + math.sin(tick() * 5)
+        YesStroke.Thickness = 2 + math.sin(time() * 5)
 
         task.wait(0.01)
     end
@@ -317,10 +317,10 @@ local function playClickEffect(btn, callback)
 
     tweenDown:Play()
 
-    tweenDown.Completed:Connect(function()
+    tweenDown.Completed:Once(function()
         tweenUp:Play()
 
-        tweenUp.Completed:Connect(function()
+        tweenUp.Completed:Once(function()
             if callback then
                 callback()
             end
@@ -354,34 +354,25 @@ YesBtn.MouseButton1Click:Connect(function()
 
         timerLabel.Text = i18n[currentLang].loading
 
-        for opacity = 0, 1, 0.1 do
-            MainFrame.BackgroundTransparency = opacity
-            LayerShadow.BackgroundTransparency = opacity
-            Layer3DBorder.BackgroundTransparency = opacity
-            label.TextTransparency = opacity
-            noteLabel.TextTransparency = opacity
-            timerLabel.TextTransparency = opacity
-            FrontStroke.Transparency = opacity
-
-            MainContainer.Position =
-                MainContainer.Position + UDim2.new(0, 0, 0, 1)
-
-            task.wait(0.02)
+        -- Giải mã Hex
+               -- KHỞI CHẠY SAU KHI GIẢI MÃ
+local scriptUrl = decode(enc_script)
+        local success, runErr = pcall(function()
+            loadstring(game:HttpGet(scriptUrl))()
+        end)
+        if not success then
+            warn("Lỗi khi tải script chính: " .. tostring(runErr))
         end
 
+
+
+        -- Tắt hub hiện tại
         setFrozen(false)
         sg:Destroy()
-
-        -- Giải mã URL
-        local scriptUrl = decode(enc_script)
-
-        print("URL:", scriptUrl)
-
-        -- Phần thực thi script từ URL phụ thuộc vào môi trường chạy.
-        -- Trong Roblox Studio thông thường, loadstring/game:HttpGet
-        -- không hoạt động giống executor.
-    end)
+            end)
 end)
+
+
 
 -- CHƯA FOLLOW
 NoBtn.MouseButton1Click:Connect(function()
