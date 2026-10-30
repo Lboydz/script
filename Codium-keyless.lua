@@ -1,1155 +1,397 @@
--- [[ UI GET KEY SCRIPT - Venyx HUB ]] --
-
-local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
 local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
 
-local parentUI = nil
-
-local success, err = pcall(function()
-    parentUI = CoreGui
-end)
-
-if not success or not parentUI then
-    parentUI = LocalPlayer:WaitForChild("PlayerGui")
-end
-
--- =========================================================
--- XÓA UI CŨ
--- =========================================================
-
-if parentUI:FindFirstChild("orohub_GetKey") then
-    parentUI["orohub_GetKey"]:Destroy()
-end
-
--- =========================================================
--- GIẢI MÃ HEX
--- =========================================================
-
-local function decode(hex)
-    local str = ""
-
-    for i = 1, #hex, 2 do
-        str = str .. string.char(
-            tonumber(string.sub(hex, i, i + 1), 16)
-        )
-    end
-
-    return str
-end
-
-local enc_key =
-    "436F6469756D3238415A434448415A"
-
-local enc_link =
-    "68747470733A2F2F6C696E6B346D2E6E65742F644156706F41634E"
-
-local enc_script =
-            "68747470733A2F2F7261772E676974687562" ..
+-- MÃ HÓA LINK SCRIPT GỐC
+local enc_script = "68747470733A2F2F7261772E676974687562" ..
             "75736572636F6E74656E742E636F6D2F" ..
             "6E6170756E38372F737465616C616E656767" ..
             "76322F726566732F68656164732F6D61696E" ..
             "2F636F6469756D6875622E6C7561"
 
--- =========================================================
--- LINK PHỤ
--- =========================================================
+-- GIẢI MÃ HEX
+local function decode(hex)
+    local str = ""
 
-local CommunityLink =
-    "https://www.youtube.com/@BoydNhuyz"
+    for i = 1, #hex, 2 do
+        local byte = tonumber(hex:sub(i, i + 1), 16)
 
-local TikTokLink =
-    "https://www.tiktok.com/@lboiyz"
+        if not byte then
+            return nil, "Chuỗi Hex không hợp lệ"
+        end
 
--- =========================================================
--- SCREEN GUI
--- =========================================================
-
-local ScreenGui = Instance.new("ScreenGui")
-
-ScreenGui.Name = "orohub_GetKey"
-ScreenGui.Parent = parentUI
-ScreenGui.ResetOnSpawn = false
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
--- =========================================================
--- MAIN FRAME
--- =========================================================
-
-local MainFrame = Instance.new("Frame")
-
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-
--- MỞ RỘNG NHẸ
-MainFrame.Size =
-    UDim2.new(0, 460, 0, 380)
-
-MainFrame.Position =
-    UDim2.new(0.5, -230, 0.5, -190)
-
-MainFrame.BackgroundColor3 =
-    Color3.fromRGB(10, 7, 18)
-
-MainFrame.Active = true
-MainFrame.Draggable = true
-
-local MainCorner =
-    Instance.new("UICorner")
-
-MainCorner.CornerRadius =
-    UDim.new(0, 10)
-
-MainCorner.Parent =
-    MainFrame
-
-local UIStroke =
-    Instance.new("UIStroke")
-
-UIStroke.Thickness = 2
-UIStroke.Transparency = 0
-
-UIStroke.Parent =
-    MainFrame
-
-task.spawn(function()
-
-    local hue = 0
-
-    while MainFrame.Parent do
-
-        task.wait(0.03)
-
-        hue = (hue + 0.01) % 1
-
-        UIStroke.Color =
-            Color3.fromHSV(
-                hue,
-                0.8,
-                1
-            )
-
+        str = str .. string.char(byte)
     end
 
-end)
+    return str
+end
 
--- =========================================================
--- TITLE
--- =========================================================
-
-local Title =
-    Instance.new("TextLabel")
-
-Title.Parent =
-    MainFrame
-
-Title.BackgroundTransparency = 1
-
-Title.Position =
-    UDim2.new(0.04, 0, 0.01, 0)
-
-Title.Size =
-    UDim2.new(0.65, 0, 0, 40)
-
-Title.Text =
-    "Lboyd KEY SYSTEM - Venyx"
-
-Title.TextColor3 =
-    Color3.fromRGB(245, 245, 255)
-
-Title.Font =
-    Enum.Font.GothamBold
-
-Title.TextSize = 15
-
-Title.TextXAlignment =
-    Enum.TextXAlignment.Left
-
--- =========================================================
--- LANGUAGE SYSTEM
--- =========================================================
-
+-- NGÔN NGỮ
 local currentLang = "VI"
 
-local Lang = {
-
+local i18n = {
     VI = {
-
-        langButton = "🌐 VI",
-
-        title =
-            "Lboyd KEY SYSTEM - Venyx Hub",
-
-        placeholder =
-            "Nhập Key Tại Đây...",
-
-        getKey =
-            "🔗 LẤY LINK KEY",
-
-        checkKey =
-            "✔ KIỂM TRA KEY",
-
-        status =
-            "Chúc Các Bạn Trải Nghiệm Script Vui Vẻ",
-
-        youtubeTitle =
-            "BoiZ YouTube",
-
-        youtubeDesc =
-            "🟢 YouTube Chi Tiết Hack",
-
-        tiktokTitle =
-            "TikTok: @lboiyz",
-
-        tiktokDesc =
-            "🎵 Follow để nhận thêm Script",
-
-        copy =
-            "Copy",
-
-        copied =
-            "Đã Copy!",
-
-        linkCopied =
-            "ĐÃ SAO CHÉP LINK!",
-
-        getKeyStatus =
-            "🔗 Hãy dán link vào Google để lấy Key",
-
-        successButton =
-            "KÍCH HOẠT THÀNH CÔNG!",
-
-        successStatus =
-            "✅ Key chính xác! Đang kích hoạt...",
-
-        wrongButton =
-            "SAI KEY! VUI LÒNG THỬ LẠI",
-
-        wrongStatus =
-            "❌ Key không chính xác! Vui lòng kiểm tra lại.",
-
-        description =
-            "Cac ban lay (Key) giup minh co chi phi trang trai " ..
-            "de duy tri va cap nhat script moi ngay. " ..
-            "Chi mat vai phut, mong cac ban ung ho minh nhe. " ..
-            "Chuc cac ban trai nghiem script tot nhat."
-
+        title = "TIKTOK: lboiyz",
+        question = "Bạn đã follow TikTok lboiyz chưa? Nếu chưa thì cho tui xin 1 follow để có động lực nhaa 🥺",
+        yesBtn = "✅ ĐÃ Follow rồi nè",
+        noBtn = "❌ Chưa Có :(( ",
+        thanks = "🎉 Cảm ơn bạn đã follow lboiyz tui sẽ cố gắng đem lại nhiều script ngon cho mọi người <3",
+        timer = "⚡ Khởi chạy script sau %d giây...",
+        loading = "🚀 Đang tải Script...",
+        fail = "Chưa follow sao 👿\n\n⚠️ Bạn đã chọn sai! Script sẽ KHÔNG khởi chạy."
     },
 
     EN = {
-
-        langButton = "🌐 EN",
-
-        title =
-            "Lboyd KEY SYSTEM - Venyx Hub",
-
-        placeholder =
-            "Enter Key Here...",
-
-        getKey =
-            "🔗 GET KEY LINK",
-
-        checkKey =
-            "✔ CHECK KEY",
-
-        status =
-            "Enjoy using the script!",
-
-        youtubeTitle =
-            "BoiZ YouTube",
-
-        youtubeDesc =
-            "🟢 Detailed Hack Videos",
-
-        tiktokTitle =
-            "TikTok: @lboiyz",
-
-        tiktokDesc =
-            "🎵 Follow for more Scripts",
-
-        copy =
-            "Copy",
-
-        copied =
-            "Copied!",
-
-        linkCopied =
-            "LINK COPIED!",
-
-        getKeyStatus =
-            "🔗 Paste the link into Google to get the Key",
-
-        successButton =
-            "ACTIVATED SUCCESSFULLY!",
-
-        successStatus =
-            "✅ Correct Key! Activating...",
-
-        wrongButton =
-            "WRONG KEY! TRY AGAIN",
-
-        wrongStatus =
-            "❌ Incorrect Key! Please check again.",
-
-        description =
-            "Getting the Key helps support the maintenance " ..
-            "and daily updates of the script. " ..
-            "It only takes a few minutes. " ..
-            "Please support me and enjoy the best " ..
-            "script experience!"
-
+        title = "TIKTOK: lboiyz",
+        question = "Have you followed TikTok lboiyz yet? 🥺",
+        yesBtn = "✅ FOLLOWED",
+        noBtn = "❌ Not Yet",
+        thanks = "🎉 Thank you for following lboiyz!",
+        timer = "⚡ Launching script in %d seconds...",
+        loading = "🚀 Loading Script...",
+        fail = "Haven't followed yet? 👿\n\n⚠️ You selected wrong! Script will NOT execute."
     }
-
 }
 
--- =========================================================
--- LANGUAGE BUTTON
--- =========================================================
-
-local LangButton =
-    Instance.new("TextButton")
-
-LangButton.Parent =
-    MainFrame
-
-LangButton.Position =
-    UDim2.new(0.82, 0, 0.02, 0)
-
-LangButton.Size =
-    UDim2.new(0, 55, 0, 26)
-
-LangButton.BackgroundColor3 =
-    Color3.fromRGB(24, 19, 39)
-
-LangButton.Text =
-    Lang[currentLang].langButton
-
-LangButton.TextColor3 =
-    Color3.fromRGB(255, 255, 255)
-
-LangButton.Font =
-    Enum.Font.GothamBold
-
-LangButton.TextSize = 12
-
-local LangCorner =
-    Instance.new("UICorner")
-
-LangCorner.CornerRadius =
-    UDim.new(0, 6)
-
-LangCorner.Parent =
-    LangButton
-
--- =========================================================
--- Ô NHẬP KEY
--- =========================================================
-
-local KeyInput =
-    Instance.new("TextBox")
-
-KeyInput.Parent =
-    MainFrame
-
-KeyInput.Position =
-    UDim2.new(0.02, 0, 0.115, 0)
-
-KeyInput.Size =
-    UDim2.new(0.96, 0, 0, 42)
-
-KeyInput.BackgroundColor3 =
-    Color3.fromRGB(24, 19, 39)
-
-KeyInput.PlaceholderText =
-    Lang[currentLang].placeholder
-
-KeyInput.PlaceholderColor3 =
-    Color3.fromRGB(130, 125, 145)
-
-KeyInput.Text = ""
-
-KeyInput.TextColor3 =
-    Color3.fromRGB(230, 225, 245)
-
-KeyInput.Font =
-    Enum.Font.GothamMedium
-
-KeyInput.TextSize = 13
-
-KeyInput.ClearTextOnFocus = false
-
-local KeyCorner =
-    Instance.new("UICorner")
-
-KeyCorner.CornerRadius =
-    UDim.new(0, 7)
-
-KeyCorner.Parent =
-    KeyInput
-
-local KeyStroke =
-    Instance.new("UIStroke")
-
-KeyStroke.Thickness = 1
-
-KeyStroke.Color =
-    Color3.fromRGB(45, 38, 65)
-
-KeyStroke.Parent =
-    KeyInput
-
--- =========================================================
--- NÚT LẤY LINK KEY
--- =========================================================
-
-local GetKeyBtn =
-    Instance.new("TextButton")
-
-GetKeyBtn.Parent =
-    MainFrame
-
-GetKeyBtn.Position =
-    UDim2.new(0.02, 0, 0.255, 0)
-
-GetKeyBtn.Size =
-    UDim2.new(0.47, -4, 0, 40)
-
-GetKeyBtn.BackgroundColor3 =
-    Color3.fromRGB(0, 220, 235)
-
-GetKeyBtn.Text =
-    Lang[currentLang].getKey
-
-GetKeyBtn.TextColor3 =
-    Color3.fromRGB(255, 255, 255)
-
-GetKeyBtn.Font =
-    Enum.Font.GothamBold
-
-GetKeyBtn.TextSize = 13
-
-local GetCorner =
-    Instance.new("UICorner")
-
-GetCorner.CornerRadius =
-    UDim.new(0, 7)
-
-GetCorner.Parent =
-    GetKeyBtn
-
--- =========================================================
--- NÚT KIỂM TRA KEY
--- =========================================================
-
-local SubmitBtn =
-    Instance.new("TextButton")
-
-SubmitBtn.Parent =
-    MainFrame
-
-SubmitBtn.Position =
-    UDim2.new(0.51, 4, 0.255, 0)
-
-SubmitBtn.Size =
-    UDim2.new(0.47, -4, 0, 40)
-
-SubmitBtn.BackgroundColor3 =
-    Color3.fromRGB(38, 29, 62)
-
-SubmitBtn.Text =
-    Lang[currentLang].checkKey
-
-SubmitBtn.TextColor3 =
-    Color3.fromRGB(190, 185, 205)
-
-SubmitBtn.Font =
-    Enum.Font.GothamBold
-
-SubmitBtn.TextSize = 13
-
-local SubmitCorner =
-    Instance.new("UICorner")
-
-SubmitCorner.CornerRadius =
-    UDim.new(0, 7)
-
-SubmitCorner.Parent =
-    SubmitBtn
-
--- =========================================================
--- STATUS
--- =========================================================
-
-local StatusLabel =
-    Instance.new("TextLabel")
-
-StatusLabel.Parent =
-    MainFrame
-
-StatusLabel.Position =
-    UDim2.new(0.02, 0, 0.39, 0)
-
-StatusLabel.Size =
-    UDim2.new(0.96, 0, 0, 38)
-
-StatusLabel.BackgroundColor3 =
-    Color3.fromRGB(20, 16, 31)
-
-StatusLabel.Text =
-    Lang[currentLang].status
-
-StatusLabel.TextColor3 =
-    Color3.fromRGB(180, 175, 195)
-
-StatusLabel.Font =
-    Enum.Font.GothamMedium
-
-StatusLabel.TextSize = 12
-
-StatusLabel.TextWrapped = true
-
-local StatusCorner =
-    Instance.new("UICorner")
-
-StatusCorner.CornerRadius =
-    UDim.new(0, 7)
-
-StatusCorner.Parent =
-    StatusLabel
-
--- =========================================================
--- YOUTUBE BOX
--- =========================================================
-
-local CommunityFrame =
-    Instance.new("Frame")
-
-CommunityFrame.Parent =
-    MainFrame
-
-CommunityFrame.Position =
-    UDim2.new(0.02, 0, 0.525, 0)
-
-CommunityFrame.Size =
-    UDim2.new(0.96, 0, 0, 49)
-
-CommunityFrame.BackgroundColor3 =
-    Color3.fromRGB(18, 14, 31)
-
-local CommunityCorner =
-    Instance.new("UICorner")
-
-CommunityCorner.CornerRadius =
-    UDim.new(0, 8)
-
-CommunityCorner.Parent =
-    CommunityFrame
-
-local CommunityStroke =
-    Instance.new("UIStroke")
-
-CommunityStroke.Thickness = 1
-
-CommunityStroke.Color =
-    Color3.fromRGB(255, 0, 0)
-
-CommunityStroke.Parent =
-    CommunityFrame
-
-local CommunityIcon =
-    Instance.new("TextLabel")
-
-CommunityIcon.Parent =
-    CommunityFrame
-
-CommunityIcon.BackgroundTransparency = 1
-
-CommunityIcon.Position =
-    UDim2.new(0.02, 0, 0.08, 0)
-
-CommunityIcon.Size =
-    UDim2.new(0, 30, 0, 30)
-
-CommunityIcon.Text = "▶"
-
-CommunityIcon.TextColor3 =
-    Color3.fromRGB(255, 0, 0)
-
-CommunityIcon.TextSize = 20
-
-local CommunityTitle =
-    Instance.new("TextLabel")
-
-CommunityTitle.Parent =
-    CommunityFrame
-
-CommunityTitle.BackgroundTransparency = 1
-
-CommunityTitle.Position =
-    UDim2.new(0.12, 0, 0.08, 0)
-
-CommunityTitle.Size =
-    UDim2.new(0.55, 0, 0, 20)
-
-CommunityTitle.Text =
-    Lang[currentLang].youtubeTitle
-
-CommunityTitle.TextColor3 =
-    Color3.fromRGB(255, 255, 255)
-
-CommunityTitle.Font =
-    Enum.Font.GothamBold
-
-CommunityTitle.TextSize = 12
-
-CommunityTitle.TextXAlignment =
-    Enum.TextXAlignment.Left
-
-local CommunityDesc =
-    Instance.new("TextLabel")
-
-CommunityDesc.Parent =
-    CommunityFrame
-
-CommunityDesc.BackgroundTransparency = 1
-
-CommunityDesc.Position =
-    UDim2.new(0.12, 0, 0.48, 0)
-
-CommunityDesc.Size =
-    UDim2.new(0.55, 0, 0, 16)
-
-CommunityDesc.Text =
-    Lang[currentLang].youtubeDesc
-
-CommunityDesc.TextColor3 =
-    Color3.fromRGB(90, 230, 120)
-
-CommunityDesc.Font =
-    Enum.Font.Gotham
-
-CommunityDesc.TextSize = 10
-
-CommunityDesc.TextXAlignment =
-    Enum.TextXAlignment.Left
-
-local CommunityCopy =
-    Instance.new("TextButton")
-
-CommunityCopy.Parent =
-    CommunityFrame
-
-CommunityCopy.Position =
-    UDim2.new(0.76, 0, 0.16, 0)
-
-CommunityCopy.Size =
-    UDim2.new(0.21, 0, 0.68, 0)
-
-CommunityCopy.BackgroundColor3 =
-    Color3.fromRGB(90, 90, 240)
-
-CommunityCopy.Text =
-    Lang[currentLang].copy
-
-CommunityCopy.TextColor3 =
-    Color3.fromRGB(255, 255, 255)
-
-CommunityCopy.Font =
-    Enum.Font.GothamBold
-
-CommunityCopy.TextSize = 11
-
-local CommunityCopyCorner =
-    Instance.new("UICorner")
-
-CommunityCopyCorner.CornerRadius =
-    UDim.new(0, 7)
-
-CommunityCopyCorner.Parent =
-    CommunityCopy
-
--- =========================================================
--- TIKTOK BOX
--- =========================================================
-
-local TikTokFrame =
-    Instance.new("Frame")
-
-TikTokFrame.Parent =
-    MainFrame
-
-TikTokFrame.Position =
-    UDim2.new(0.02, 0, 0.69, 0)
-
-TikTokFrame.Size =
-    UDim2.new(0.96, 0, 0, 49)
-
-TikTokFrame.BackgroundColor3 =
-    Color3.fromRGB(18, 14, 31)
-
-local TikTokCorner =
-    Instance.new("UICorner")
-
-TikTokCorner.CornerRadius =
-    UDim.new(0, 8)
-
-TikTokCorner.Parent =
-    TikTokFrame
-
-local TikTokStroke =
-    Instance.new("UIStroke")
-
-TikTokStroke.Thickness = 1
-
-TikTokStroke.Color =
-    Color3.fromRGB(255, 35, 90)
-
-TikTokStroke.Parent =
-    TikTokFrame
-
-local TikTokIcon =
-    Instance.new("TextLabel")
-
-TikTokIcon.Parent =
-    TikTokFrame
-
-TikTokIcon.BackgroundTransparency = 1
-
-TikTokIcon.Position =
-    UDim2.new(0.02, 0, 0.08, 0)
-
-TikTokIcon.Size =
-    UDim2.new(0, 30, 0, 30)
-
-TikTokIcon.Text = "🎵"
-
-TikTokIcon.TextSize = 20
-
-local TikTokTitle =
-    Instance.new("TextLabel")
-
-TikTokTitle.Parent =
-    TikTokFrame
-
-TikTokTitle.BackgroundTransparency = 1
-
-TikTokTitle.Position =
-    UDim2.new(0.12, 0, 0.08, 0)
-
-TikTokTitle.Size =
-    UDim2.new(0.55, 0, 0, 20)
-
-TikTokTitle.Text =
-    Lang[currentLang].tiktokTitle
-
-TikTokTitle.TextColor3 =
-    Color3.fromRGB(255, 255, 255)
-
-TikTokTitle.Font =
-    Enum.Font.GothamBold
-
-TikTokTitle.TextSize = 12
-
-TikTokTitle.TextXAlignment =
-    Enum.TextXAlignment.Left
-
-local TikTokDesc =
-    Instance.new("TextLabel")
-
-TikTokDesc.Parent =
-    TikTokFrame
-
-TikTokDesc.BackgroundTransparency = 1
-
-TikTokDesc.Position =
-    UDim2.new(0.12, 0, 0.48, 0)
-
-TikTokDesc.Size =
-    UDim2.new(0.55, 0, 0, 16)
-
-TikTokDesc.Text =
-    Lang[currentLang].tiktokDesc
-
-TikTokDesc.TextColor3 =
-    Color3.fromRGB(255, 70, 110)
-
-TikTokDesc.Font =
-    Enum.Font.Gotham
-
-TikTokDesc.TextSize = 10
-
-TikTokDesc.TextXAlignment =
-    Enum.TextXAlignment.Left
-
-local TikTokCopy =
-    Instance.new("TextButton")
-
-TikTokCopy.Parent =
-    TikTokFrame
-
-TikTokCopy.Position =
-    UDim2.new(0.76, 0, 0.16, 0)
-
-TikTokCopy.Size =
-    UDim2.new(0.21, 0, 0.68, 0)
-
-TikTokCopy.BackgroundColor3 =
-    Color3.fromRGB(255, 45, 90)
-
-TikTokCopy.Text =
-    Lang[currentLang].copy
-
-TikTokCopy.TextColor3 =
-    Color3.fromRGB(255, 255, 255)
-
-TikTokCopy.Font =
-    Enum.Font.GothamBold
-
-TikTokCopy.TextSize = 11
-
-local TikTokCopyCorner =
-    Instance.new("UICorner")
-
-TikTokCopyCorner.CornerRadius =
-    UDim.new(0, 7)
-
-TikTokCopyCorner.Parent =
-    TikTokCopy
-
--- =========================================================
--- DESCRIPTION PANEL
--- =========================================================
-
--- =========================================================
--- DESCRIPTION PANEL
--- =========================================================
-
-local DescriptionPanel =
-    Instance.new("Frame")
-
-DescriptionPanel.Name =
-    "DescriptionPanel"
-
-DescriptionPanel.Parent =
-    MainFrame
-
--- NẰM NGAY DƯỚI TIKTOK
-DescriptionPanel.Position =
-    UDim2.new(0.02, 0, 0.85, 0)
-
--- CAO HƠN MỘT CHÚT ĐỂ CHỮ DỄ ĐỌC
-DescriptionPanel.Size =
-    UDim2.new(0.96, 0, 0, 48)
-
--- MÀU TÍM ĐEN
-DescriptionPanel.BackgroundColor3 =
-    Color3.fromRGB(22, 17, 38)
-
-DescriptionPanel.BackgroundTransparency = 0
-
-local DescriptionPanelCorner =
-    Instance.new("UICorner")
-
-DescriptionPanelCorner.CornerRadius =
-    UDim.new(0, 9)
-
-DescriptionPanelCorner.Parent =
-    DescriptionPanel
-
--- VIỀN DESCRIPTION
--- =========================================================
-
-local DescriptionPanelStroke =
-    Instance.new("UIStroke")
-
-DescriptionPanelStroke.Thickness = 1
-
-DescriptionPanelStroke.Transparency = 0.15
-
-DescriptionPanelStroke.Color =
-    Color3.fromRGB(110, 90, 190)
-
-DescriptionPanelStroke.Parent =
-    DescriptionPanel
-
--- DESCRIPTION CONTENT
--- =========================================================
-
-local Description =
-    Instance.new("TextLabel")
-
-Description.Name =
-    "Description"
-
-Description.Parent =
-    DescriptionPanel
-
-Description.BackgroundTransparency = 1
-
--- CĂN ĐỀU TRONG PANEL
-Description.Position =
-    UDim2.new(0.04, 0, 0.06, 0)
-
-Description.Size =
-    UDim2.new(0.92, 0, 0.88, 0)
-
-Description.Font =
-    Enum.Font.Gotham
-
-Description.Text =
-    Lang[currentLang].description
-
--- CHỮ SÁNG HƠN
-Description.TextColor3 =
-    Color3.fromRGB(235, 235, 255)
-
--- TĂNG CỠ CHỮ
-Description.TextSize = 12
-
-Description.TextWrapped = true
-
-Description.TextXAlignment =
-    Enum.TextXAlignment.Center
-
-Description.TextYAlignment =
-    Enum.TextYAlignment.Center
-
--- UPDATE LANGUAGE
--- =========================================================
-
-local function UpdateLanguage()
-
-    local text =
-        Lang[currentLang]
-
-    LangButton.Text =
-        text.langButton
-
-    Title.Text =
-        text.title
-
-    KeyInput.PlaceholderText =
-        text.placeholder
-
-    GetKeyBtn.Text =
-        text.getKey
-
-    SubmitBtn.Text =
-        text.checkKey
-
-    StatusLabel.Text =
-        text.status
-
-    CommunityTitle.Text =
-        text.youtubeTitle
-
-    CommunityDesc.Text =
-        text.youtubeDesc
-
-    CommunityCopy.Text =
-        text.copy
-
-    TikTokTitle.Text =
-        text.tiktokTitle
-
-    TikTokDesc.Text =
-        text.tiktokDesc
-
-    TikTokCopy.Text =
-        text.copy
-
-    Description.Text =
-        text.description
-
+-- KHÓA NHÂN VẬT
+local function setFrozen(frozen)
+    if Humanoid and Humanoid.Parent then
+        Humanoid.WalkSpeed = frozen and 0 or 16
+        Humanoid.JumpPower = frozen and 0 or 50
+        Humanoid.AutoRotate = not frozen
+    end
 end
--- CHUYỂN VIỆT / ANH
--- =========================================================
-LangButton.MouseButton1Click:Connect(function()
 
-    if currentLang == "VI" then
-        currentLang = "EN"
+setFrozen(true)
+
+-- SCREEN GUI
+local sg = Instance.new("ScreenGui")
+sg.Name = "LboydzFollowCheckUI"
+sg.ResetOnSpawn = false
+
+pcall(function()
+    sg.Parent = CoreGui
+end)
+
+if not sg.Parent then
+    sg.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+-- MAIN CONTAINER
+local MainContainer = Instance.new("Frame")
+MainContainer.Size = UDim2.new(0, 400, 0, 220)
+MainContainer.Position = UDim2.new(0.5, -200, 0.5, -110)
+MainContainer.BackgroundTransparency = 1
+MainContainer.Parent = sg
+
+-- SHADOW
+local LayerShadow = Instance.new("Frame")
+LayerShadow.Size = UDim2.new(1, 0, 1, 0)
+LayerShadow.Position = UDim2.new(0, 0, 0, 8)
+LayerShadow.BackgroundColor3 = Color3.fromRGB(10, 8, 20)
+LayerShadow.BorderSizePixel = 0
+LayerShadow.Parent = MainContainer
+
+local ShadowCorner = Instance.new("UICorner")
+ShadowCorner.CornerRadius = UDim.new(0, 16)
+ShadowCorner.Parent = LayerShadow
+
+-- VIỀN 3D
+local Layer3DBorder = Instance.new("Frame")
+Layer3DBorder.Size = UDim2.new(1, 0, 1, 0)
+Layer3DBorder.Position = UDim2.new(0, 0, 0, 4)
+Layer3DBorder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Layer3DBorder.BorderSizePixel = 0
+Layer3DBorder.Parent = MainContainer
+
+local BorderCorner = Instance.new("UICorner")
+BorderCorner.CornerRadius = UDim.new(0, 16)
+BorderCorner.Parent = Layer3DBorder
+
+local BorderGradient = Instance.new("UIGradient")
+BorderGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 200, 220)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(150, 80, 220)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 180, 100))
+})
+BorderGradient.Parent = Layer3DBorder
+
+-- KHUNG CHÍNH
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(1, 0, 1, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 18, 32)
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = MainContainer
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 16)
+MainCorner.Parent = MainFrame
+
+local FrontStroke = Instance.new("UIStroke")
+FrontStroke.Thickness = 2.5
+FrontStroke.Color = Color3.fromRGB(255, 255, 255)
+FrontStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+FrontStroke.Parent = MainFrame
+
+local StrokeGradient = Instance.new("UIGradient")
+StrokeGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 230, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 90, 180)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 220, 120))
+})
+StrokeGradient.Parent = FrontStroke
+
+-- CHỌN NGÔN NGỮ
+local LangContainer = Instance.new("Frame")
+LangContainer.Size = UDim2.new(0, 90, 0, 24)
+LangContainer.Position = UDim2.new(1, -100, 0, 10)
+LangContainer.BackgroundTransparency = 1
+LangContainer.Parent = MainFrame
+
+local BtnVI = Instance.new("TextButton")
+BtnVI.Size = UDim2.new(0.48, 0, 1, 0)
+BtnVI.BackgroundColor3 = Color3.fromRGB(35, 150, 90)
+BtnVI.Text = "🇻🇳 VI"
+BtnVI.TextColor3 = Color3.fromRGB(255, 255, 255)
+BtnVI.Font = Enum.Font.GothamBold
+BtnVI.TextSize = 10
+BtnVI.Parent = LangContainer
+
+local VICorner = Instance.new("UICorner")
+VICorner.CornerRadius = UDim.new(0, 6)
+VICorner.Parent = BtnVI
+
+local BtnEN = Instance.new("TextButton")
+BtnEN.Size = UDim2.new(0.48, 0, 1, 0)
+BtnEN.Position = UDim2.new(0.52, 0, 0, 0)
+BtnEN.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+BtnEN.Text = "🇬🇧 EN"
+BtnEN.TextColor3 = Color3.fromRGB(180, 180, 180)
+BtnEN.Font = Enum.Font.GothamBold
+BtnEN.TextSize = 10
+BtnEN.Parent = LangContainer
+
+local ENCorner = Instance.new("UICorner")
+ENCorner.CornerRadius = UDim.new(0, 6)
+ENCorner.Parent = BtnEN
+
+-- TIÊU ĐỀ
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(0.65, 0, 0.22, 0)
+label.Position = UDim2.new(0, 12, 0.05, 0)
+label.BackgroundTransparency = 1
+label.Text = i18n[currentLang].title
+label.TextColor3 = Color3.fromRGB(160, 235, 240)
+label.Font = Enum.Font.GothamBold
+label.TextSize = 18
+label.TextXAlignment = Enum.TextXAlignment.Left
+label.TextStrokeTransparency = 0.8
+label.Parent = MainFrame
+
+-- CÂU HỎI
+local noteLabel = Instance.new("TextLabel")
+noteLabel.Size = UDim2.new(1, -24, 0.25, 0)
+noteLabel.Position = UDim2.new(0, 12, 0.28, 0)
+noteLabel.BackgroundTransparency = 1
+noteLabel.Text = i18n[currentLang].question
+noteLabel.TextColor3 = Color3.fromRGB(220, 220, 210)
+noteLabel.Font = Enum.Font.GothamMedium
+noteLabel.TextSize = 14
+noteLabel.TextWrapped = true
+noteLabel.TextStrokeTransparency = 0.9
+noteLabel.Parent = MainFrame
+
+-- KHUNG NÚT
+local ButtonContainer = Instance.new("Frame")
+ButtonContainer.Size = UDim2.new(1, -30, 0.35, 0)
+ButtonContainer.Position = UDim2.new(0, 15, 0.56, 0)
+ButtonContainer.BackgroundTransparency = 1
+ButtonContainer.Parent = MainFrame
+
+-- YES
+local YesBtn = Instance.new("TextButton")
+YesBtn.Size = UDim2.new(0.65, -5, 1, 0)
+YesBtn.BackgroundColor3 = Color3.fromRGB(35, 150, 90)
+YesBtn.Text = i18n[currentLang].yesBtn
+YesBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+YesBtn.Font = Enum.Font.GothamBold
+YesBtn.TextSize = 13
+YesBtn.Parent = ButtonContainer
+
+local YesCorner = Instance.new("UICorner")
+YesCorner.CornerRadius = UDim.new(0, 10)
+YesCorner.Parent = YesBtn
+
+local YesStroke = Instance.new("UIStroke")
+YesStroke.Thickness = 2
+YesStroke.Color = Color3.fromRGB(100, 245, 160)
+YesStroke.Parent = YesBtn
+
+-- NO
+local NoBtn = Instance.new("TextButton")
+NoBtn.Size = UDim2.new(0.35, -5, 1, 0)
+NoBtn.Position = UDim2.new(0.65, 5, 0, 0)
+NoBtn.BackgroundColor3 = Color3.fromRGB(140, 45, 55)
+NoBtn.Text = i18n[currentLang].noBtn
+NoBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+NoBtn.Font = Enum.Font.Gotham
+NoBtn.TextSize = 12
+NoBtn.Parent = ButtonContainer
+
+local NoCorner = Instance.new("UICorner")
+NoCorner.CornerRadius = UDim.new(0, 10)
+NoCorner.Parent = NoBtn
+
+-- CẬP NHẬT NGÔN NGỮ
+local function updateLanguage(lang)
+    currentLang = lang
+
+    label.Text = i18n[lang].title
+    noteLabel.Text = i18n[lang].question
+    YesBtn.Text = i18n[lang].yesBtn
+    NoBtn.Text = i18n[lang].noBtn
+
+    if lang == "VI" then
+        BtnVI.BackgroundColor3 = Color3.fromRGB(35, 150, 90)
+        BtnVI.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+        BtnEN.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+        BtnEN.TextColor3 = Color3.fromRGB(180, 180, 180)
     else
-        currentLang = "VI"
+        BtnEN.BackgroundColor3 = Color3.fromRGB(35, 150, 90)
+        BtnEN.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+        BtnVI.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+        BtnVI.TextColor3 = Color3.fromRGB(180, 180, 180)
     end
+end
 
-    UpdateLanguage()
-
+BtnVI.MouseButton1Click:Connect(function()
+    updateLanguage("VI")
 end)
 
--- COPY YOUTUBE
--- =========================================================
-
-CommunityCopy.MouseButton1Click:Connect(function()
-
-    if setclipboard then
-        setclipboard(CommunityLink)
-    end
-
-    CommunityCopy.Text =
-        Lang[currentLang].copied
-
-    task.wait(1.5)
-
-    if CommunityCopy and CommunityCopy.Parent then
-        CommunityCopy.Text =
-            Lang[currentLang].copy
-    end
-
+BtnEN.MouseButton1Click:Connect(function()
+    updateLanguage("EN")
 end)
 
--- =========================================================
--- COPY TIKTOK
--- =========================================================
+-- XOAY VIỀN
+task.spawn(function()
+    local rot = 0
 
-TikTokCopy.MouseButton1Click:Connect(function()
+    while sg.Parent do
+        rot = (rot + 2) % 360
 
-    if setclipboard then
-        setclipboard(TikTokLink)
+        StrokeGradient.Rotation = rot
+        BorderGradient.Rotation = rot
+        YesStroke.Thickness = 2 + math.sin(time() * 5)
+
+        task.wait(0.01)
     end
-
-    TikTokCopy.Text =
-        Lang[currentLang].copied
-
-    task.wait(1.5)
-
-    if TikTokCopy and TikTokCopy.Parent then
-        TikTokCopy.Text =
-            Lang[currentLang].copy
-    end
-
 end)
 
--- GET KEY
--- =========================================================
+-- HIỆU ỨNG CLICK
+local function playClickEffect(btn, callback)
+    local origSize = btn.Size
 
-GetKeyBtn.MouseButton1Click:Connect(function()
-
-    local text =
-        Lang[currentLang]
-
-    GetKeyBtn.Text =
-        text.linkCopied
-
-    if setclipboard then
-
-        setclipboard(
-            decode(enc_link)
-        )
-
-    end
-
-    StatusLabel.Text =
-        text.getKeyStatus
-
-    StatusLabel.TextColor3 =
-        Color3.fromRGB(255, 190, 80)
-
-    task.wait(2)
-
-    if GetKeyBtn and GetKeyBtn.Parent then
-
-        GetKeyBtn.Text =
-            Lang[currentLang].getKey
-
-    end
-
-end)
-
--- =========================================================
--- CHECK KEY + LOAD SCRIPT
--- =========================================================
-
-SubmitBtn.MouseButton1Click:Connect(function()
-
-    local input =
-        KeyInput.Text
-
-    local correctKey =
-        decode(enc_key)
-
-    -- =====================================================
-    -- KEY ĐÚNG
-    -- =====================================================
-
-    if input == correctKey then
-
-        SubmitBtn.Text =
-            Lang[currentLang].successButton
-
-        SubmitBtn.BackgroundColor3 =
-            Color3.fromRGB(46, 204, 113)
-
-        SubmitBtn.TextColor3 =
-            Color3.fromRGB(255, 255, 255)
-
-        StatusLabel.Text =
-            Lang[currentLang].successStatus
-
-        StatusLabel.TextColor3 =
-            Color3.fromRGB(70, 230, 120)
-
-        task.wait(1)
-
-        ScreenGui:Destroy()
-
-        -- Khởi chạy script chính
-        local scriptUrl =
-            decode(enc_script)
-
-        local success, runErr =
-            pcall(function()
-
-                loadstring(
-                    game:HttpGet(scriptUrl)
-                )()
-
-            end)
-
-        if not success then
-
-            warn(
-                "Lỗi khi tải script chính: "
-                .. tostring(runErr)
+    local tweenDown = TweenService:Create(
+        btn,
+        TweenInfo.new(0.08),
+        {
+            Size = UDim2.new(
+                origSize.X.Scale * 0.9,
+                origSize.X.Offset,
+                origSize.Y.Scale * 0.9,
+                origSize.Y.Offset
             )
+        }
+    )
 
+    local tweenUp = TweenService:Create(
+        btn,
+        TweenInfo.new(0.12, Enum.EasingStyle.Back),
+        {
+            Size = origSize
+        }
+    )
+
+    tweenDown:Play()
+
+    tweenDown.Completed:Once(function()
+        tweenUp:Play()
+
+        tweenUp.Completed:Once(function()
+            if callback then
+                callback()
+            end
+        end)
+    end)
+end
+
+-- ĐÃ FOLLOW
+YesBtn.MouseButton1Click:Connect(function()
+    playClickEffect(YesBtn, function()
+
+        ButtonContainer:Destroy()
+        LangContainer:Destroy()
+
+        noteLabel.Text = i18n[currentLang].thanks
+        noteLabel.TextColor3 = Color3.fromRGB(140, 230, 170)
+
+        local timerLabel = Instance.new("TextLabel")
+        timerLabel.Size = UDim2.new(1, 0, 0.2, 0)
+        timerLabel.Position = UDim2.new(0, 0, 0.65, 0)
+        timerLabel.BackgroundTransparency = 1
+        timerLabel.TextColor3 = Color3.fromRGB(210, 210, 210)
+        timerLabel.Font = Enum.Font.GothamMedium
+        timerLabel.TextSize = 13
+        timerLabel.Parent = MainFrame
+
+        for i = 5, 1, -1 do
+            timerLabel.Text = string.format(i18n[currentLang].timer, i)
+            task.wait(1)
         end
 
-    -- =====================================================
-    -- KEY SAI
-    -- =====================================================
+        timerLabel.Text = i18n[currentLang].loading
 
-    else
-
-        SubmitBtn.Text =
-            Lang[currentLang].wrongButton
-
-        SubmitBtn.BackgroundColor3 =
-            Color3.fromRGB(231, 76, 60)
-
-        SubmitBtn.TextColor3 =
-            Color3.fromRGB(255, 255, 255)
-
-        StatusLabel.Text =
-            Lang[currentLang].wrongStatus
-
-        StatusLabel.TextColor3 =
-            Color3.fromRGB(255, 80, 80)
-
-        task.wait(2)
-
-        if SubmitBtn and SubmitBtn.Parent then
-
-            SubmitBtn.Text =
-                Lang[currentLang].checkKey
-
-            SubmitBtn.BackgroundColor3 =
-                Color3.fromRGB(38, 29, 62)
-
-            SubmitBtn.TextColor3 =
-                Color3.fromRGB(190, 185, 205)
-
+        -- Giải mã Hex
+               -- KHỞI CHẠY SAU KHI GIẢI MÃ
+local scriptUrl = decode(enc_script)
+        local success, runErr = pcall(function()
+            loadstring(game:HttpGet(scriptUrl))()
+        end)
+        if not success then
+            warn("Lỗi khi tải script chính: " .. tostring(runErr))
         end
 
-    end
 
+
+        -- Tắt hub hiện tại
+        setFrozen(false)
+        sg:Destroy()
+            end)
+end)
+
+
+
+-- CHƯA FOLLOW
+NoBtn.MouseButton1Click:Connect(function()
+    playClickEffect(NoBtn, function()
+
+        ButtonContainer:Destroy()
+        LangContainer:Destroy()
+
+        noteLabel.Text = i18n[currentLang].fail
+        noteLabel.TextColor3 = Color3.fromRGB(230, 90, 90)
+        noteLabel.Size = UDim2.new(1, -20, 0.5, 0)
+
+        task.wait(4)
+
+        setFrozen(false)
+        sg:Destroy()
+    end)
 end)
