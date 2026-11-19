@@ -1,0 +1,1063 @@
+getgenv().UserConfig = (type(getgenv().UserConfig) == "table" and getgenv().UserConfig) or {}
+if tostring(getgenv().UserConfig.ConfigId or "") == "" and tostring(getgenv().UserConfig.ConfigName or "") == "" then
+    getgenv().UserConfig.ConfigId = ""
+end
+local v1 = "https://discord.com/api/webhooks/1566647599719522364/Qo3ask2TtOIiHUd5RFWfGTtolG3yd2C7yHI-fpQEGn69fsyJyXJA9y9PbDtuB0S41RuS"
+local v2 = ((((syn and syn.request) or http_request) or request) or (http and http.request))
+local function v3(v4, v5)
+    if (((type(v2) ~= "function") or (type(v4) ~= "string")) or (v4 == "")) then
+        return false
+    end
+    local v6, v7 = pcall(function()
+        return v2({ Url = v4, Method = "POST", Headers = { ["Content-Type"] = "application/json" }, Body = game:GetService("HttpService"):JSONEncode(v5) })
+    end)
+    local v8 = ((v6 and (type(v7) == "table")) and tonumber((v7.StatusCode or v7.Status)))
+    if (((not v8) or (v8 < 200)) or (v8 >= 300)) then
+        warn(("[Vape Hub] Progress webhook failed (HTTP " .. (tostring((v8 or "unavailable")) .. ")")))
+        return false
+    end
+    return true
+end
+do
+    local v9 = getgenv()
+    local v10 = 4
+    local v11 = v9.VapeHunterCapeController
+    if ((not v11) or (v11.Version ~= v10)) then
+        if v11 then
+            v11.equipped = false
+        end
+        local v12 = { Version = v10, equipped = false, nextInventory = 0, nextEquip = 0 }
+        local v13 = {
+            ["Pilot Helmet"] = 130,
+            ["Hunter Cape (Black)"] = 80,
+            ["Hunter Cape (Green)"] = 80,
+            ["Hunter Cape (Red)"] = 80,
+            ["Bandanna (Black)"] = 80,
+            ["Bandanna (Green)"] = 80,
+            ["Bandanna (Red)"] = 80,
+            ["Dojo Belt (Black)"] = 80,
+            ["Headband (Black)"] = 70,
+            ["Dojo Belt (Red)"] = 60,
+            ["Headband (Red)"] = 60,
+            ["Jaw Shield"] = 50,
+            ["Pretty Helmet"] = 50,
+            ["Shark Tooth Necklace"] = 50,
+            ["Tooth Necklace"] = 50,
+            ["Dino Hood"] = 50,
+            ["Easter Bunny Cape"] = 50,
+            ["Frosty Helmet"] = 50,
+            ["Dojo Belt (Purple)"] = 40,
+            ["Headband (Purple)"] = 40,
+            ["Ghoul Mask"] = 35,
+            ["Dojo Belt (Blue)"] = 30,
+            ["Headband (Blue)"] = 30,
+            ["Santa Hat"] = 30,
+            ["Kitsune Ribbon"] = 30,
+            ["Divine Cloak"] = 30,
+            ["Oni Helmet"] = 30,
+            ["Swan Glasses"] = 25,
+            ["Feathered Visage"] = 25,
+            ["Dojo Belt (Green)"] = 20,
+            ["Headband (Green)"] = 20,
+            ["Elf Hat"] = 20,
+            ["Peppermint Helmet"] = 20,
+            ["Pumpkin Mask"] = 20,
+            ["Red Ribbon"] = 20,
+            ["Cool Shades"] = 17.5,
+            ["Dojo Belt (Yellow)"] = 15,
+            ["Dojo Belt (Orange)"] = 15,
+            ["Headband (Yellow)"] = 15,
+            ["Headband (Orange)"] = 15,
+            ["Cupid's Top Hat"] = 14,
+            ["Romantic Bouquet"] = 14,
+            ["Dojo Belt (White)"] = 10,
+            ["Headband (White)"] = 10
+        }
+        local v14, v15 = {}, v13
+        for v16 in pairs(v13) do
+            table.insert(v14, v16)
+        end
+        table.sort(v14, function(v17, v18)
+            if (v13[v17] == v13[v18]) then
+                local v19, v20 = v17:find("Hunter Cape", 1, true), v18:find("Hunter Cape", 1, true)
+                if ((v19 ~= nil) ~= (v20 ~= nil)) then
+                    return (v19 ~= nil)
+                end
+                return (v17 < v18)
+            end
+            return ((v13[v17] or 0) > (v13[v18] or 0))
+        end)
+        v12.Bonuses = v13
+        local v21, v22, v23
+        v9.VapeHunterCapeController = v12
+        v9.VapeHunterTweenSpeed = function(v24)
+            return ((v12.equipped and 325) or v24)
+        end
+        local function v25(v26)
+            local v27 = game:GetService("ReplicatedStorage")
+            local v28 = v27:FindFirstChild("ItemReplicationService")
+            local v29 = v27:FindFirstChild("ItemConfig")
+            if (((not v28) or (not v29)) or (not v28:FindFirstChild("KEYS"))) then
+                return nil
+            end
+            v21 = (v21 or require(v28))
+            v22 = (v22 or require(v28.KEYS))
+            v23 = (v23 or require(v29))
+            if (v21.IsInitialized == false) then
+                return nil
+            end
+            local v30, v31 = pcall(function()
+                return v21:GetItems(v22.QUANTITY)
+            end)
+            if (((not v30) or (type(v31) ~= "table")) or (next(v31) == nil)) then
+                local v32 = (v21._UserCache or v21.UserCache)
+                local v33 = (v32 and v32[v26.UserId])
+                if v33 then
+                    v31 = v33:GetItems(v22.QUANTITY)
+                end
+            end
+            if (type(v31) ~= "table") then
+                return nil
+            end
+            local v34 = {}
+            for v35, v36 in pairs(v31) do
+                if (v36.ItemId and ((tonumber(v36.Value) or 0) > 0)) then
+                    local v37, v38 = pcall(function()
+                        return v23.match(v36.ItemId):unwrap()
+                    end)
+                    if (v37 and v38) then
+                        local v39, v40 = (v38.Index or {}), (v38.Display or {})
+                        for v41, v42 in pairs({ v39.DebugLabel, v39.StorageKey, v40.Name }) do
+                            if (type(v42) == "string") then
+                                local v43 = v42:gsub("%s*%[.-%]%s*$", "")
+                                if v15[v43] then
+                                    v34[v43] = v36
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            for v44, v45 in ipairs(v14) do
+                if v34[v45] then
+                    return v45, v34[v45]
+                end
+            end
+            return nil
+        end
+        local function v46()
+            local v47 = game:GetService("Players").LocalPlayer
+            local v48 = (v47 and v47.Character)
+            local v49 = (v48 and v48:FindFirstChildOfClass("Humanoid"))
+            v12.equipped = false
+            if ((not v49) or (v49.Health <= 0)) then
+                return
+            end
+            local v50
+            for v51, v52 in ipairs(v48:GetChildren()) do
+                if ((v15[v52.Name] and (not v52:IsA("Tool"))) or (v52:IsA("StringValue") and v15[v52.Value])) then
+                    local v53 = ((v15[v52.Name] and v52.Name) or v52.Value)
+                    if ((not v50) or ((v13[v53] or 0) > (v13[v50] or 0))) then
+                        v50 = v53
+                    end
+                end
+            end
+            local v54 = v47:FindFirstChild("Data")
+            local v55 = (v54 and v54:FindFirstChild("Accessory"))
+            if ((v55 and v55:IsA("StringValue")) and v15[v55.Value]) then
+                v50 = v55.Value
+            end
+            local v56 = game:GetService("ReplicatedStorage")
+            local v57 = v56:FindFirstChild("ItemReplicationService")
+            local v58 = v56:FindFirstChild("ItemConfig")
+            if ((v57 and v58) and v57:FindFirstChild("KEYS")) then
+                v21 = (v21 or require(v57))
+                v22 = (v22 or require(v57.KEYS))
+                v23 = (v23 or require(v58))
+                if (v21.IsInitialized ~= false) then
+                    local v59 = (v21._UserCache or v21.UserCache)
+                    local v60 = (v59 and v59[v47.UserId])
+                    local v61 = ((v60 and v60:GetItems(v22.IS_EQUIPPED)) or v21:GetItems(v22.IS_EQUIPPED))
+                    for v62, v63 in pairs((v61 or {})) do
+                        if (v63.Value == true) then
+                            local v64, v65 = pcall(function()
+                                return v23.match(v63.ItemId):unwrap()
+                            end)
+                            local v66 = (((v64 and v65) and v65.Index) and v65.Index.StorageKey)
+                            if ((v66 and v15[v66]) and ((not v50) or ((v13[v66] or 0) > (v13[v50] or 0)))) then
+                                v50 = v66
+                            end
+                        end
+                    end
+                end
+            end
+            v12.equipped = (v50 ~= nil)
+            v12.Accessory = v50
+            v12.MovementBonus = ((v50 and v13[v50]) or 0)
+            v12.LastError = nil
+            if (os.clock() < v12.nextEquip) then
+                return
+            end
+            local v67 = v47:FindFirstChild("Backpack")
+            for v68, v69 in ipairs(v14) do
+                local v70 = ((v67 and v67:FindFirstChild(v69)) or v48:FindFirstChild(v69))
+                if ((v70 and v70:IsA("Tool")) and ((not v50) or ((v13[v69] or 0) > (v13[v50] or 0)))) then
+                    v12.nextEquip = (os.clock() + 3)
+                    v49:EquipTool(v70)
+                    return
+                end
+            end
+            if (os.clock() < v12.nextInventory) then
+                return
+            end
+            v12.nextInventory = (os.clock() + 5)
+            local v71, v72 = v25(v47)
+            if ((v9.VapeHunterCapeController ~= v12) or (v47.Character ~= v48)) then
+                return
+            end
+            v12.OwnedCape = v71
+            if ((not v71) or (v50 and ((v13[v71] or 0) <= (v13[v50] or 0)))) then
+                return
+            end
+            local v73 = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
+            local v74 = (v73 and v73:FindFirstChild("CommF_"))
+            if (not v74) then
+                return
+            end
+            v12.nextEquip = (os.clock() + 3)
+            local v75 = (v72 and v72.NetworkedUID)
+            v12.OwnedUID = v75
+            v12.LastEquipResult = v74:InvokeServer("LoadItem", (v75 or v71))
+        end
+        task.spawn(function()
+            local v76 = ((setthreadidentity or setidentity) or set_thread_identity)
+            if v76 then
+                pcall(v76, 2)
+            end
+            while (v9.VapeHunterCapeController == v12) do
+                local v77, v78 = pcall(v46)
+                if (not v77) then
+                    v12.equipped = false
+                    v12.LastError = tostring(v78)
+                end
+                task.wait(1)
+            end
+        end)
+    end
+    getgenv().K4_TOOL_API = (getgenv().K4_TOOL_API or "https://kurinian-hub.xyz/api/k4")
+    getgenv().HopApiKey = "92b62b279e2d9869c739467fcfb54d01e5f35253c3f8e659cc4eaead65cf46de"
+    getgenv().HopApiBaseUrl = "https://memaybeo.kurinian-hub.xyz"
+    K4_PrepareStartup = function()
+        local v79 = getgenv()
+        local v80 = game:GetService("Players")
+        local v81 = game:GetService("ReplicatedStorage")
+        local v82 = game:GetService("HttpService")
+        local function v83(v84, v85, v86, v87)
+            local v88, v89 = tick(), (-math.huge)
+            while ((tick() - v88) < v85) do
+                local v90, v91 = pcall(v86)
+                if (v90 and v91) then
+                    return v91
+                end
+                if ((tick() - v89) >= 10) then
+                    warn(("[K4 startup] Waiting for " .. v84))
+                    v89 = tick()
+                end
+                if v87 then
+                    pcall(v87)
+                end
+                task.wait(0.25)
+            end
+            error(("[K4 startup] Timed out waiting for " .. v84))
+        end
+        local function v92(v93, v94)
+            local v95, v96, v97 = false, false, nil
+            local v98 = task.spawn(function()
+                v96, v97 = pcall(v93)
+                v95 = true
+            end)
+            local v99 = tick()
+            while ((not v95) and ((tick() - v99) < v94)) do
+                task.wait(0.1)
+            end
+            if (not v95) then
+                pcall(task.cancel, v98)
+                error("Request timed out")
+            end
+            if (not v96) then
+                error(tostring(v97))
+            end
+            return v97
+        end
+        v83("game and JobId", 120, function()
+            return (game:IsLoaded() and (tostring((game.JobId or "")) ~= ""))
+        end)
+        local v100 = v83("LocalPlayer", 120, function()
+            return v80.LocalPlayer
+        end)
+        local v102 = v83("CommF_", 120, function()
+            local v101 = v81:FindFirstChild("Remotes")
+            return (v101 and v101:FindFirstChild("CommF_"))
+        end)
+        local v103 = (-math.huge)
+        v83("PlayerGui, Data and living character", 120, function()
+            local v104, v105 = v100:FindFirstChild("PlayerGui"), v100:FindFirstChild("Data")
+            local v106 = v100.Character
+            local v107 = (v106 and v106:FindFirstChildOfClass("Humanoid"))
+            local v108 = (v105 and v105:FindFirstChild("Race"))
+            if ((((((((not v104) or (not v108)) or (tostring((v108.Value or "")) == "")) or (not v105:FindFirstChild("Fragments"))) or (not v105:FindFirstChild("Level"))) or (not v107)) or (v107.Health <= 0)) or (not v106:FindFirstChild("HumanoidRootPart"))) then
+                return false
+            end
+            local v109 = v104:FindFirstChild("LoadingScreen")
+            if v109 then
+                local v110, v111 = true, true
+                pcall(function()
+                    v110 = v109.Enabled
+                end)
+                pcall(function()
+                    v111 = v109.Visible
+                end)
+                if ((v110 ~= false) and (v111 ~= false)) then
+                    return false
+                end
+            end
+            return true
+        end, function()
+            if ((not v100.Team) and ((tick() - v103) >= 5)) then
+                v103 = tick()
+                local v112 = ((v79.UserConfig or v79.Config) or {})
+                v92(function()
+                    v102:InvokeServer("SetTeam", (((v112.Team == "Pirates") and "Pirates") or "Marines"))
+                end, 3)
+            end
+        end)
+        local v115 = v83("UserConfig.ConfigId or Config.ConfigId", 30, function()
+            for v113, v114 in ipairs({ (v79.UserConfig or false), (v79.Config or false) }) do
+                if ((type(v114) == "table") and (tostring(((v114.ConfigId or v114.ConfigName) or "")) ~= "")) then
+                    return v114
+                end
+            end
+            if (tostring((v79.K4_CONFIG or "")) ~= "") then
+                return ((v79.UserConfig or v79.Config) or {})
+            end
+            v79.K4_CONFIG = ""
+            return ((v79.UserConfig or v79.Config) or {})
+        end)
+        local v116 = (((type(v79.UserConfig) == "table") and tonumber(v79.UserConfig.FPS)) or nil)
+        local v117 = {}
+        for v118, v119 in pairs(v115) do
+            v117[v118] = v119
+        end
+        local v120 = ((v116 or tonumber(v115.FPS)) or 15)
+        if (((v120 ~= v120) or (v120 < 0)) or (v120 == math.huge)) then
+            v120 = 15
+        end
+        v117.FPS = v120
+        v79.UserConfig = v117
+        if (type(setfpscap) == "function") then
+            pcall(setfpscap, v120)
+        end
+        local v120_cid = tostring(v115.ConfigId or "")
+        if v120_cid == "" then
+            v120_cid = tostring(v115.ConfigName or "")
+        end
+        if v120_cid == "" then
+            v120_cid = tostring(v79.K4_CONFIG or "")
+        end
+        if v120_cid == "" then
+            v120_cid = ""
+        end
+        v79.K4_CONFIG = v120_cid
+        local v121, v122
+        local v123 = tostring(v79.K4_TOOL_API):gsub("/api/k4/?$", "")
+        for v124 = 1, 5 do
+            local v131, v132 = pcall(function()
+                local v125 = (v123 .. ("/api/kaitunv4?configId=" .. v82:UrlEncode(v79.K4_CONFIG)))
+                local v126 = ((((syn and syn.request) or http_request) or request) or (http and http.request))
+                local v127
+                if (type(v126) == "function") then
+                    local v128 = v92(function()
+                        return v126({ Url = v125, Method = "GET", Timeout = 8 })
+                    end, 8)
+                    local v129 = (tonumber((((v128.StatusCode or v128.status) or v128.Status) or 0)) or 0)
+                    assert(((v129 >= 200) and (v129 < 300)), ("Config API HTTP " .. tostring(v129)))
+                    v127 = (v128.Body or v128.body)
+                else
+                    v127 = v92(function()
+                        return game:HttpGet(v125)
+                    end, 8)
+                end
+                local v130 = v82:JSONDecode(v127)
+                assert((((type(v130) == "table") and (v130.success ~= false)) and (type(v130.config) == "table")), "Config not found")
+                assert(((v130.config.helpUsers == nil) or (type(v130.config.helpUsers) == "table")), "Invalid Help Users")
+                return v130.config
+            end)
+            if v131 then
+                v121 = v132
+                break
+            end
+            v122 = tostring(v132)
+            warn(("[K4 startup] Config attempt " .. (v124 .. ("/5 failed: " .. v122))))
+            if (v124 < 5) then
+                task.wait(1)
+            end
+        end
+        assert(v121, ("[K4 startup] Cannot resolve MAIN/HELP: " .. tostring(v122)))
+        v79.K4_API_CFG = v121
+        local v133 = false
+        for v134, v135 in pairs((v121.helpUsers or {})) do
+            if (string.lower(tostring(v135)) == string.lower(v100.Name)) then
+                v133 = true
+                break
+            end
+        end
+        Main_Acc, Help_Acc = (not v133), v133
+        if v121.targetTier then
+            local v136 = tonumber(tostring(v121.targetTier):match("%d+"))
+            if v136 then
+                v79.Config = (v79.Config or {})
+                v79.Config.Tier = v136
+            end
+        end
+        warn(("[K4 startup] " .. (v100.Name .. (" | " .. (v79.K4_CONFIG .. (" | " .. ((v133 and "HELP") or "MAIN")))))))
+    end
+    K4_ConfigId = function()
+        return tostring((getgenv().K4_CONFIG or ""))
+    end
+    local v137 = getgenv().K4_STARTUP
+    if ((type(v137) == "table") and ((v137.jobId == tostring(game.JobId)) or (v137.jobId == ""))) then
+        local v138 = ((type(v137.thread) == "thread") and (coroutine.status(v137.thread) ~= "dead"))
+        if ((v137.phase == "running") or ((v137.phase == "starting") and v138)) then
+            warn("[K4 startup] Already running or starting in this server")
+            return
+        end
+    end
+    local v139 = { jobId = tostring(game.JobId), phase = "starting", thread = coroutine.running() }
+    getgenv().K4_STARTUP = v139
+    local v2722, v2723 = xpcall(function()
+        K4_PrepareStartup()
+        v139.jobId = tostring(game.JobId)
+        do
+            local v140 = game:GetService("Players")
+            local v141 = game:GetService("HttpService")
+            local v142 = v140.LocalPlayer:WaitForChild("Data"):WaitForChild("Race")
+            local v143 = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_")
+            local v144 = { race = "", at = 0, value = nil, busy = false }
+            K4_ReadRaceLevel = function(v145)
+                local v146 = tostring(v142.Value)
+                if (((not v145) and (v144.race == v146)) and ((tick() - v144.at) < 1)) then
+                    return v144.value
+                end
+                if v144.busy then
+                    return (((v144.race == v146) and v144.value) or nil)
+                end
+                v144.busy = true
+                local v147, v148 = false, nil
+                local v151 = task.spawn(function()
+                    local v149, v150 = pcall(function()
+                        return v143:InvokeServer("getRaceLevel")
+                    end)
+                    if v149 then
+                        v148 = tonumber(v150)
+                    end
+                    v147 = true
+                end)
+                local v152 = tick()
+                while ((not v147) and ((tick() - v152) < 5)) do
+                    task.wait(0.1)
+                end
+                if (not v147) then
+                    pcall(task.cancel, v151)
+                end
+                v144.busy = false
+                if (tostring(v142.Value) ~= v146) then
+                    return nil
+                end
+                if (v148 and (v148 >= 1)) then
+                    v144 = { race = v146, at = tick(), value = v148 }
+                    return v148
+                end
+                v144 = { race = v146, at = tick(), value = nil }
+                return nil
+            end
+            K4_QueueRaceUpgradeResume = function()
+                if (getgenv().K4_RACE_RESUME_JOB == tostring(game.JobId)) then
+                    return
+                end
+                local v153 = ((queue_on_teleport or queueonteleport) or (syn and syn.queue_on_teleport))
+                if (type(v153) ~= "function") then
+                    warn("[K4 V2/V3] Executor needs auto-execute Kaitun loader after teleport")
+                    return
+                end
+                local v156, v157 = pcall(function()
+                    local v154 = v141:JSONEncode(((getgenv().UserConfig or getgenv().Config) or {}))
+                    local v155 = tostring((getgenv().KurinianKey or ""))
+                    v153(("repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer\n" .. ("Scripts_Type = 'KaitunV4'\ngetgenv().KurinianKey = " .. (string.format("%q", v155) .. ("\ngetgenv().Config = game:GetService('HttpService'):JSONDecode(" .. (string.format("%q", v154) .. (")" .. ("\ngetgenv().UserConfig = getgenv().Config\n" .. ("getgenv().HopApiKey = " .. (string.format("%q", tostring((getgenv().HopApiKey or ""))) .. ("\n" .. ("getgenv().HopApiBaseUrl = " .. (string.format("%q", tostring((getgenv().HopApiBaseUrl or "https://memaybeo.kurinian-hub.xyz"))) .. ("\n" .. "loadstring(game:HttpGet('https://bot.kurinian-hub.xyz/files/v2/loaders/KaitunV4.lua?v=' .. os.time()))()"))))))))))))))
+                end)
+                if v156 then
+                    getgenv().K4_RACE_RESUME_JOB = tostring(game.JobId)
+                else
+                    warn(("[K4 V2/V3] Cannot queue loader: " .. tostring(v157)))
+                end
+            end
+            K4_RunRaceUpgradePrerequisite = function()
+                if ((not Main_Acc) or Help_Acc) then
+                    return false
+                end
+                local v158 = K4_ReadRaceLevel(false)
+                while (not v158) do
+                    warn("[K4 V2/V3] Waiting for getRaceLevel before entering V4")
+                    task.wait(1)
+                    v158 = K4_ReadRaceLevel(true)
+                end
+                if (v158 >= 3) then
+                    if ((game.PlaceId ~= 7449423635) and (game.PlaceId ~= 100117331123089)) then
+                        K4_QueueRaceUpgradeResume()
+                    end
+                    return false
+                end
+                local v159 = getgenv().K4RaceUpgrade
+                if ((v159 and v159.active) and (v159.jobId == tostring(game.JobId))) then
+                    return true
+                end
+                v159 = { active = true, jobId = tostring(game.JobId), level = v158, detail = "Preparing V2/V3" }
+                getgenv().K4RaceUpgrade = v159
+                K4_QueueRaceUpgradeResume()
+                pcall(function()
+                    if K4TyrantFarmController then
+                        K4TyrantFarmController.Stop()
+                    end
+                end)
+                pcall(function()
+                    if K4_CancelTrialMovement then
+                        K4_CancelTrialMovement()
+                    end
+                end)
+                local v160 = tostring(getgenv().K4_TOOL_API):gsub("/api/k4/?$", "")
+                local v161 = ((((syn and syn.request) or http_request) or request) or (http and http.request))
+                local function v162(v163, v164)
+                    if (type(v161) ~= "function") then
+                        return false
+                    end
+                    local v165, v166 = pcall(function()
+                        return v161({ Url = (v160 .. v163), Method = "POST", Headers = { ["Content-Type"] = "application/json" }, Body = v141:JSONEncode(v164) })
+                    end)
+                    local v167 = (((v165 and v166) and tonumber(((v166.StatusCode or v166.status) or 0))) or 0)
+                    return ((v167 >= 200) and (v167 < 300))
+                end
+                local function v168()
+                    local v169 = tostring(v140.LocalPlayer.Data.Race.Value)
+                    local v170 = v162("/api/k4/match", {
+                        username = v140.LocalPlayer.Name,
+                        role = "upgear",
+                        config_name = K4_ConfigId(),
+                        race = v169,
+                        race_level = v159.level,
+                        upgrading_race = true,
+                        training = true,
+                        queue_ready = false,
+                        trial_active = false,
+                        job_id = tostring(game.JobId),
+                        place_id = game.PlaceId,
+                        task_status = v159.detail
+                    })
+                    v162(("/api/mainaccount/" .. v140.LocalPlayer.Name), {
+                        jobid = tostring(game.JobId),
+                        placeid = tostring(game.PlaceId),
+                        players = {},
+                        count = 0,
+                        fullmoon = false,
+                        trialStatus = (((v159.level < 2) and "upgrading_v2") or "upgrading_v3")
+                    })
+                    return v170
+                end
+                while (not v168()) do
+                    warn("[K4 V2/V3] Retrying web heartbeat to release trial turn")
+                    task.wait(1)
+                end
+                task.spawn(function()
+                    while v159.active do
+                        pcall(v168)
+                        task.wait(1)
+                    end
+                end)
+                task.spawn(function()
+                    while v159.active do
+                        local v171 = K4_ReadRaceLevel(true)
+                        if v171 then
+                            v159.level = v171
+                        end
+                        task.wait(1)
+                    end
+                end)
+                local v172 = ((game.PlaceId == 4442272183) or (game.PlaceId == 79091703265657))
+                if (not v172) then
+                    v159.detail = "V2/V3: travelling to Sea 2"
+                    while true do
+                        pcall(function()
+                            v143:InvokeServer("TravelDressrosa")
+                        end)
+                        task.wait(5)
+                    end
+                end
+                local v173, v174 = pcall(K4_RunV2V3Automation, v159)
+                if (not v173) then
+                    v159.detail = ("V2/V3 controller error: " .. tostring(v174))
+                    warn(("[K4 V2/V3] " .. tostring(v174)))
+                end
+                while true do
+                    if (v159.level >= 3) then
+                        pcall(function()
+                            v143:InvokeServer("TravelZou")
+                        end)
+                    end
+                    task.wait(5)
+                end
+            end
+        end
+        K4_RunV2V3Automation = function(v175)
+            local v176 = game:GetService("Players")
+            local v177 = v176.LocalPlayer
+            local v178 = game:GetService("ReplicatedStorage")
+            local v179 = v178:WaitForChild("Remotes"):WaitForChild("CommF_")
+            local v180 = game:GetService("TweenService")
+            local v181 = game:GetService("VirtualInputManager")
+            local v182 = game:GetService("CollectionService")
+            local v183 = tostring(v177.Data.Race.Value)
+            local v184 = {
+                Human = true,
+                Mink = true,
+                Fishman = true,
+                Skypiea = true,
+                Ghoul = true,
+                Cyborg = true
+            }
+            local v185, v186, v187
+            local v188, v189, v190 = {}, {}, {}
+            local v191, v192, v193 = 0, 1, (-math.huge)
+            local v194, v195, v196 = (-math.huge), (-math.huge), (-math.huge)
+            local v197, v198
+            local function v199(v200)
+                v175.detail = v200
+                if (type(status) == "function") then
+                    status(v200)
+                end
+            end
+            local function v201(v202)
+                v202 = (v202 or v177.Character)
+                if (not v202) then
+                    return nil
+                end
+                local v203 = v202:FindFirstChild("HumanoidRootPart")
+                local v204 = v202:FindFirstChildOfClass("Humanoid")
+                if ((v203 and v204) and (v204.Health > 0)) then
+                    return v203, v204
+                end
+                return nil
+            end
+            local function v205()
+                if v185 then
+                    pcall(function()
+                        v185:Cancel()
+                    end)
+                end
+                v185, v186, v187 = nil, nil, nil
+            end
+            local function v206(v207, v208)
+                local v209, v210 = v201()
+                if (not v209) then
+                    return false
+                end
+                local v211 = (v208 or v209)
+                if (not v208) then
+                    v210.Sit = false
+                end
+                local v212 = v209:FindFirstChild("K4RaceUpgradeFlight")
+                if ((not v208) and (not v212)) then
+                    v212 = Instance.new("BodyVelocity")
+                    v212.Name = "K4RaceUpgradeFlight"
+                    v212.MaxForce = Vector3.new(0, math.huge, 0)
+                    v212.Velocity = Vector3.zero
+                    v212.Parent = v209
+                elseif (v208 and v212) then
+                    v212:Destroy()
+                end
+                for v213, v214 in ipairs(v177.Character:GetDescendants()) do
+                    if v214:IsA("BasePart") then
+                        v214.CanCollide = false
+                    end
+                end
+                local v215 = Vector3.new((-6496.89795), 89.0350037, (-116.509003))
+                local v216 = Vector3.new(924.639771, 125.397652, 32844.3906)
+                if ((not v208) and ((v211.Position - v207.Position).Magnitude > 8000)) then
+                    local v217 = ((v211.Position - v216).Magnitude < 3000)
+                    local v218 = ((v207.Position - v216).Magnitude < 3000)
+                    if (v217 ~= v218) then
+                        v207 = CFrame.new(((v217 and v216) or v215))
+                    end
+                end
+                local v219 = (v211.Position - v207.Position).Magnitude
+                if (v219 < 8) then
+                    v205()
+                    return true
+                end
+                if (((((v211 ~= v186) or (not v187)) or ((v187 - v207.Position).Magnitude > 12)) or (not v185)) or (v185.PlaybackState ~= Enum.PlaybackState.Playing)) then
+                    v205()
+                    v186, v187 = v211, v207.Position
+                    v185 = v180:Create(v211, TweenInfo.new((v219 / getgenv().VapeHunterTweenSpeed(185)), Enum.EasingStyle.Linear), { CFrame = v207 })
+                    v185:Play()
+                end
+                return (v219 < 25)
+            end
+            local function v220(v221)
+                local _, v223 = v201()
+                if (not v223) then
+                    return nil
+                end
+                for v224, v225 in ipairs({ v177.Character, v177.Backpack }) do
+                    for v226, v227 in ipairs(v225:GetChildren()) do
+                        if (v227:IsA("Tool") and (v227.ToolTip == v221)) then
+                            if (v227.Parent ~= v177.Character) then
+                                v223:EquipTool(v227)
+                            end
+                            return v227
+                        end
+                    end
+                end
+            end
+            local function v228(v229)
+                if ((tick() - v194) < 0.8) then
+                    return
+                end
+                local v230 = v220(v229)
+                if (not v230) then
+                    return
+                end
+                v194 = tick()
+                for v231, v232 in ipairs({ "Z", "X", "C" }) do
+                    pcall(function()
+                        v181:SendKeyEvent(true, v232, false, game)
+                        task.wait(0.05)
+                        v181:SendKeyEvent(false, v232, false, game)
+                    end)
+                end
+            end
+            local function v233(v234)
+                local v235 = v201()
+                local v236 = (v234 and v234:FindFirstChild("HumanoidRootPart"))
+                if (((not v235) or (not v236)) or ((v235.Position - v236.Position).Magnitude > 65)) then
+                    return
+                end
+                v220("Melee")
+                pcall(function()
+                    if (not v177.Character:FindFirstChild("HasBuso")) then
+                        v179:InvokeServer("Buso")
+                    end
+                    if ((not v197) or (not v198)) then
+                        local v237 = require(v178.Modules.Net)
+                        v197 = v237:RemoteEvent("RegisterAttack", true)
+                        v198 = v237:RemoteEvent("RegisterHit", true)
+                    end
+                    v197:FireServer(0)
+                    v198:FireServer((v234:FindFirstChild("Head") or v236), { { v234, v236 }, v234 }, nil, "078da341")
+                end)
+                pcall(function()
+                    game:GetService("VirtualUser"):ClickButton1(Vector2.new())
+                end)
+            end
+            local function v238(v239)
+                local v240 = workspace:FindFirstChild("Enemies")
+                for v241, v242 in ipairs({ v240, v178 }) do
+                    if v242 then
+                        for v243, v244 in ipairs(v242:GetChildren()) do
+                            if (v244:IsA("Model") and ((v244.Name == v239) or (v244.Name:sub(1, (#v239 + 2)) == (v239 .. " [")))) then
+                                if v201(v244) then
+                                    return v244, (v242 == v240)
+                                end
+                            end
+                        end
+                    end
+                end
+                return nil, false
+            end
+            local function v245(v246, v247)
+                local v248, v249 = v238(v246)
+                if v248 then
+                    local v250 = v201(v248)
+                    v206((v250.CFrame * CFrame.new(0, 25, 0)))
+                    if v249 then
+                        v233(v248)
+                    end
+                    return v248, v249
+                end
+                if v247 then
+                    v206(v247)
+                end
+            end
+            local function v251()
+                if ((tick() - v193) < 30) then
+                    return
+                end
+                v193 = tick()
+                K4_QueueRaceUpgradeResume()
+                local v252 = game:HttpGetAsync(("https://games.roblox.com/v1/games/" .. (game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")))
+                local v253 = game:GetService("HttpService"):JSONDecode(v252)
+                for v254, v255 in ipairs((v253.data or {})) do
+                    if ((v255.id ~= game.JobId) and (v255.playing < math.min((v255.maxPlayers or 12), 10))) then
+                        v205()
+                        v178:WaitForChild("__ServerBrowser"):InvokeServer("teleport", v255.id)
+                        return
+                    end
+                end
+            end
+            local function v256(v257)
+                return (v177.Backpack:FindFirstChild(v257) or (v177.Character and v177.Character:FindFirstChild(v257)))
+            end
+            local v258 = CFrame.new(980.099, 121.331, 1287.209)
+            local function v259()
+                local v260 = tonumber(v179:InvokeServer("BartiloQuestProgress", "Bartilo"))
+                if (not v260) then
+                    v199("V2: waiting for Bartilo progress")
+                    return
+                end
+                if (v260 < 3) then
+                    v199(("V2: Bartilo quest " .. tostring(v260)))
+                    if (v260 == 0) then
+                        local v261 = v177.PlayerGui:FindFirstChild("Main")
+                        local v262 = (v261 and v261:FindFirstChild("Quest"))
+                        if ((not v262) or (not v262.Visible)) then
+                            v179:InvokeServer("StartQuest", "BartiloQuest", 1)
+                        end
+                        v245("Swan Pirate", v258)
+                    elseif (v260 == 1) then
+                        v245("Jeremy", CFrame.new(2316, 449, 787))
+                    elseif (v260 == 2) then
+                        local v263 = {
+                            CFrame.new((-1836), 11, 1714),
+                            CFrame.new((-1850.5), 13.2, 1750.9),
+                            CFrame.new((-1858.9), 19.4, 1712),
+                            CFrame.new((-1803.9), 16.6, 1750.9),
+                            CFrame.new((-1858.6), 16.9, 1724.8),
+                            CFrame.new((-1869.5), 16, 1681),
+                            CFrame.new((-1800.1), 15.2, 1681),
+                            CFrame.new((-1820.5), 12, 1730)
+                        }
+                        if v206(v263[v192]) then
+                            v192 = ((v192 % #v263) + 1)
+                            task.wait(0.5)
+                        end
+                    end
+                    return
+                end
+                local v264 = tonumber(v179:InvokeServer("Alchemist", "1"))
+                if (v264 == 0) then
+                    v199("V2: accepting Alchemist flower quest")
+                    v179:InvokeServer("Alchemist", "2")
+                elseif (v264 == 1) then
+                    for v265, v266 in ipairs({ "Flower 1", "Flower 2" }) do
+                        if (not v256(v266)) then
+                            local v267 = (workspace:FindFirstChild(v266) or workspace:FindFirstChild(v266:gsub(" ", "")))
+                            if (v267 and (not v267:IsA("BasePart"))) then
+                                v267 = v267:FindFirstChildWhichIsA("BasePart")
+                            end
+                            if (v267 and (v267.Transparency < 0.9)) then
+                                v199(("V2: collecting " .. v266))
+                                if v206((v267.CFrame * CFrame.new(0, 1, 0))) then
+                                    local v268 = v201()
+                                    pcall(function()
+                                        local _fti = (firetouchinterest :: any)
+                                        _fti(v268, v267, 0)
+                                        _fti(v268, v267, 1)
+                                    end)
+                                end
+                                return
+                            end
+                        end
+                    end
+                    if (not v256("Flower 3")) then
+                        v199("V2: Swan Pirates for Flower 3")
+                        v245("Swan Pirate", v258)
+                    elseif (v256("Flower 1") and v256("Flower 2")) then
+                        v199("V2: submitting three flowers")
+                        if v206(CFrame.new(556.9, 38.3, 8.7)) then
+                            v179:InvokeServer("Alchemist", "3")
+                        end
+                    else
+                        v199("V2: waiting for remaining day/night flower")
+                    end
+                elseif (v264 == 2) then
+                    v199("V2: submitting Alchemist quest")
+                    if v206(CFrame.new(556.9, 38.3, 8.7)) then
+                        v179:InvokeServer("Alchemist", "3")
+                    end
+                end
+            end
+            local v269 = { { name = "Orbitus", pos = CFrame.new((-2172.74), 103.32, (-4015.03)) }, { name = "Jeremy", pos = CFrame.new(2006.93, 448.96, 853.98) }, { name = "Diamond", pos = CFrame.new((-1576.72), 198.59, 13.72) } }
+            local function v270()
+                for v271, v272 in ipairs(v269) do
+                    if (not v188[v272.name]) then
+                        v199(("Human V3: " .. v272.name))
+                        local v273, v274 = v245(v272.name, v272.pos)
+                        if (v273 and v274) then
+                            local v275 = v273:FindFirstChildOfClass("Humanoid")
+                            local v276 = v273:FindFirstChild("HumanoidRootPart")
+                            while (((v275 and (v275.Health > 0)) and v273.Parent) and (v175.level < 3)) do
+                                if ((not v201()) or (tostring(v177.Data.Race.Value) ~= v183)) then
+                                    return
+                                end
+                                if ((not v276) or (not v276.Parent)) then
+                                    break
+                                end
+                                v206((v276.CFrame * CFrame.new(0, 25, 0)))
+                                v233(v273)
+                                task.wait(0.15)
+                            end
+                            if (v275 and (v275.Health <= 0)) then
+                                v188[v272.name] = true
+                            end
+                        elseif (not v273) then
+                            v251()
+                        end
+                        return
+                    end
+                end
+                v179:InvokeServer("Wenlocktoad", "3")
+            end
+            local function v277()
+                local v278 = v201()
+                local v279, v280 = nil, math.huge
+                for v281, v282 in ipairs(v182:GetTagged("_ChestTagged")) do
+                    if ((v282:IsA("BasePart") and v282.Parent) and v282.CanTouch) then
+                        local v283 = (v278.Position - v282.Position).Magnitude
+                        if (v283 < v280) then
+                            v279, v280 = v282, v283
+                        end
+                    end
+                end
+                v199(("Mink V3: chests " .. (tostring(v191) .. "/30")))
+                if v279 then
+                    local v284 = v177.Data.Beli.Value
+                    if v206((v279.CFrame * CFrame.new(0, 3, 0))) then
+                        pcall(function()
+                            local _fti = (firetouchinterest :: any)
+                            _fti(v278, v279, 0)
+                            _fti(v278, v279, 1)
+                        end)
+                        task.wait(1)
+                        if (v177.Data.Beli.Value > v284) then
+                            v191 = (v191 + 1)
+                        end
+                    end
+                else
+                    v251()
+                end
+                if (v191 >= 30) then
+                    v179:InvokeServer("Wenlocktoad", "3")
+                end
+            end
+            local function v285()
+                local v286 = workspace:FindFirstChild("SeaBeasts")
+                for v287, v288 in ipairs(((v286 and v286:GetChildren()) or {})) do
+                    local v289, v290 = v288:FindFirstChild("Health"), v288:FindFirstChild("HumanoidRootPart")
+                    if ((v290 and v289) and (v289.Value > 0)) then
+                        v199("Fishman V3: Sea Beast")
+                        v206((v290.CFrame * CFrame.new(0, 200, 0)))
+                        local v291 = v201()
+                        if ((v291.Position - v290.Position).Magnitude < 500) then
+                            for v292, v293 in ipairs({ "Blox Fruit", "Melee", "Sword", "Gun" }) do
+                                v228(v293)
+                                task.wait(0.8)
+                            end
+                        end
+                        return
+                    end
+                end
+                local v294 = workspace:FindFirstChild("Boats")
+                for v295, v296 in ipairs(((v294 and v294:GetChildren()) or {})) do
+                    local v297, v298 = v296:FindFirstChild("Owner"), v296:FindFirstChild("VehicleSeat", true)
+                    if ((v297 and (tostring(v297.Value) == v177.Name)) and v298) then
+                        v199("Fishman V3: sailing for Sea Beast")
+                        local _, v300 = v201()
+                        if (v300.SeatPart ~= v298) then
+                            if v206((v298.CFrame * CFrame.new(0, 1, 0))) then
+                                v298:Sit(v300)
+                            end
+                        else
+                            v206(CFrame.new((-10000000), 81, 37016.25), v298)
+                        end
+                        return
+                    end
+                end
+                v199("Fishman V3: buying boat")
+                if v206(CFrame.new((-110.271713), 9.76438141, 2956.36841)) then
+                    v179:InvokeServer("BuyBoat", "MarineBrigade")
+                end
+            end
+            local function v301()
+                if ((tick() - v195) > 5) then
+                    v179:InvokeServer("EnablePvp")
+                    v195 = tick()
+                end
+                local v302
+                for v303, v304 in ipairs(v176:GetPlayers()) do
+                    local v305 = v304.Character
+                    local v306 = v201(v305)
+                    local v307 = v304:FindFirstChild("Data")
+                    if (((((((((((v304 ~= v177) and v305) and v306) and v307) and (not v189[v304.UserId])) and ((v190[v304.UserId] or 0) < tick())) and (not v305:FindFirstChild("NoPvP"))) and (not v305:FindFirstChild("SafeZone"))) and (v304:GetAttribute("PvpDisabled") ~= true)) and (math.abs((v177.Data.Level.Value - v307.Level.Value)) <= (((v183 == "Skypiea") and 200) or 500))) and ((v183 ~= "Skypiea") or (v307.Race.Value == "Skypiea"))) then
+                        v302 = v304
+                        break
+                    end
+                end
+                if (not v302) then
+                    v199((v183 .. " V3: finding eligible player"))
+                    v251()
+                    return
+                end
+                v199((v183 .. (" V3: " .. v302.Name)))
+                local v308 = v302.Character
+                local v309, v310 = v201(v308)
+                local v311, v312 = v310.Health, tick()
+                while (((v309.Parent and (v310.Health > 0)) and (v302.Character == v308)) and (v175.level < 3)) do
+                    if ((not v201()) or (tostring(v177.Data.Race.Value) ~= v183)) then
+                        return
+                    end
+                    v206((v309.CFrame * CFrame.new(0, 5, 2)))
+                    v233(v308)
+                    v228("Melee")
+                    if (v310.Health < v311) then
+                        v311, v312 = v310.Health, tick()
+                    end
+                    if ((tick() - v312) > 10) then
+                        v190[v302.UserId] = (tick() + 30)
+                        break
+                    end
+                    task.wait(0.15)
+                end
+                if (v310.Health <= 0) then
+                    v189[v302.UserId] = true
+                end
+                v179:InvokeServer("Wenlocktoad", "3")
+            end
+            local function v313()
+                v199("Cyborg V3: submitting fruit")
+                for v314, v315 in ipairs({ v177.Character, v177.Backpack }) do
+                    for v316, v317 in ipairs(v315:GetChildren()) do
+                        if (v317:IsA("Tool") and (v317:FindFirstChild("EatRemote", true) or v317.Name:find("Fruit"))) then
+                            local _, v319 = v201()
+                            v319:EquipTool(v317)
+                            task.wait(0.5)
+                            v179:InvokeServer("Wenlocktoad", "3")
+                            return
+                        end
+                    end
+                end
+                if ((tick() - v196) < 5) then
+                    return
+                end
+                v196 = tick()
+                local v320, v321
+                pcall(function()
+                    local v322 = {}
+                    for v323, v324 in pairs((v179:InvokeServer("GetFruits", false) or {})) do
+                        v322[v324.Name] = tonumber(v324.Price)
+ ... (Còn 744 KB)
