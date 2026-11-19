@@ -41,13 +41,13 @@ getgenv().Configs = {
         "Bazooka";
     };
     ["Auto Active Race V4"] = true;
-    ["FPS Limit"] = 60;
+    ["FPS Limit"] = 30;
     ["Auto Load"] = true;
     ["Boost FPS"] = true;
     ["Hop Fruits"] = true; -- Bật để hop tìm trái 1M lên sea 3
     ["Hop Near"] = {Enabled = false; Distance = 500;};-- Hop khi có người chơi khác ở gần i'm gay
     ["Webhook"] = {
-        ["URL"] = ""; -- Discord webhook URL; để trống để tắt
+        ["URL"] = "https://discord.com/api/webhooks/1561348066706063411/fr9zu744NxObiv7c1CgXdBXmnw7C3O_5SSvmQI7egzKf7RZH8QcjZ5B70FMo0jCgOuNL"; -- Discord webhook URL; để trống để tắt
         ["Interval"] = 300; -- Gửi báo cáo mỗi 300 giây
     };
 };
