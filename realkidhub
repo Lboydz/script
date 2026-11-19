@@ -1,0 +1,54 @@
+getgenv().Configs = {
+    ["Key"] = "TRAU_8DACBA8C24F580A5FDB8CA2101E09C2CE862219AE82F73B4"; -- Để trống để dùng key đã lưu hoặc nhập qua UI
+    ["Quest"] = {
+        ["Evo Race V1"] = true;
+        ["Evo Race V2"] = true;
+        ["RGB Haki"] = true;
+        ["Pull Lerver"] = true;
+    };
+    Sword = {
+        "Dual-Headed Blade";
+        "Smoke Admiral";
+        "Wardens Sword";
+        "Cutlass";
+        "Katana";
+        "Dual Katana";
+        "Triple Katana";
+        "Iron Mace";
+        "Saber";
+        "Pole (1st Form)";
+        "Gravity Blade";
+        "Longsword";
+        "Rengoku";
+        "Midnight Blade";
+        "Soul Cane";
+        "Bisento";
+        "Yama";
+        "Tushita";
+        "Cursed Dual Katana";
+    };
+    Gun = {
+        "Skull Guitar";
+        "Kabucha";
+        "Venom Bow";
+        "Musket";
+        "Flintlock";
+        "Refined Slingshot"; 
+        "Magma Blaster";
+        "Dual Flintlock";
+        "Cannon";
+        "Bizarre Revolver";
+        "Bazooka";
+    };
+    ["Auto Active Race V4"] = true;
+    ["FPS Limit"] = 60;
+    ["Auto Load"] = true;
+    ["Boost FPS"] = true;
+    ["Hop Fruits"] = true; -- Bật để hop tìm trái 1M lên sea 3
+    ["Hop Near"] = {Enabled = false; Distance = 500;};-- Hop khi có người chơi khác ở gần i'm gay
+    ["Webhook"] = {
+        ["URL"] = ""; -- Discord webhook URL; để trống để tắt
+        ["Interval"] = 300; -- Gửi báo cáo mỗi 300 giây
+    };
+};
+loadstring(game:HttpGet("https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/kaitun.lua"))()
