@@ -5,6 +5,10 @@ Config = {
     Team = "Pirates",
     FastTween = true,
     AutoHop = false,
+    NearbyHopEnabled = true,
+    NearbyHopDistance = 200,
+    NearbyHopConfirmSeconds = 2,
+    NearbyHopCooldown = 30,
     HopWhenIdle = false,
     FpsBoost = true,
     FpsCap = 60,
@@ -11914,9 +11918,17 @@ if true then
             end
             local response = Remotes.CommF_:InvokeServer("DressrosaQuestProgress")
 
+            local Result = nil
+            if type(response) ~= "table" then
+              FunctionsHandler.SecondSeaPuzzle:Set("CurrentProgressLevel", nil)
+              return
+            end
+
             if response.TalkedDetective then
               if response.KilledIceBoss then
                 FunctionsHandler.SecondSeaPuzzle:Set("IsCompleted", true)
+                FunctionsHandler.SecondSeaPuzzle:Set("CurrentProgressLevel", nil)
+                return
               else
                 Result = 2
               end
@@ -11957,8 +11969,8 @@ if true then
               return
             end
 
-            FunctionsHandler.SecondSeaPuzzle.Methods.Refresh:Call()
-            return FunctionsHandler.SecondSeaPuzzle.Methods.Start:Call()
+            -- Let the scheduler refresh state on the next pass.
+            return
           end)
 
           FunctionsHandler.ColosseumPuzzle:RegisterMethod("Refresh", function()
@@ -17332,7 +17344,95 @@ if true then
             SetTask("MainTask", "Loaded In " .. (math.floor((tick() - v16) * 1000) .. "ms!"))
             QueueList = {}
 
-            NearbyHopHandler = function()
+            do
+              local visited = {}
+              local historyPath = "BananaNearbyHop_" .. tostring(game.PlaceId) .. ".json"
+              local httpService = game:GetService("HttpService")
+              pcall(function()
+                if isfile(historyPath) then
+                  local saved = httpService:JSONDecode(readfile(historyPath))
+                  if type(saved) == "table" then
+                    for id, value in pairs(saved) do
+                      if value == true then visited[tostring(id)] = true end
+                    end
+                  end
+                end
+              end)
+              local function remember(id)
+                visited[tostring(id)] = true
+                pcall(function() writefile(historyPath, httpService:JSONEncode(visited)) end)
+              end
+              remember(game.JobId)
+              local busy = false
+              local lastAttempt = -math.huge
+              local firstSeen = {}
+
+              NearbyHopHandler = function()
+                if not Config.NearbyHopEnabled or busy then return end
+                if os.clock() - lastAttempt < Config.NearbyHopCooldown then return end
+                local character = LocalPlayer.Character
+                local root = character and character:FindFirstChild("HumanoidRootPart")
+                if not root then return end
+                local detected = nil
+                local present = {}
+                for _, player in ipairs(PlayersService:GetPlayers()) do
+                  if player ~= LocalPlayer then
+                    local other = player.Character
+                    local otherRoot = other and other:FindFirstChild("HumanoidRootPart")
+                    local humanoid = other and other:FindFirstChildOfClass("Humanoid")
+                    if otherRoot and humanoid and humanoid.Health > 0
+                        and (otherRoot.Position - root.Position).Magnitude <= Config.NearbyHopDistance then
+                      present[player.UserId] = true
+                      firstSeen[player.UserId] = firstSeen[player.UserId] or os.clock()
+                      if os.clock() - firstSeen[player.UserId] >= Config.NearbyHopConfirmSeconds then
+                        detected = player
+                      end
+                    end
+                  end
+                end
+                for id in pairs(firstSeen) do
+                  if not present[id] then firstSeen[id] = nil end
+                end
+                if not detected then return end
+                busy = true
+                lastAttempt = os.clock()
+                task.spawn(function()
+                  local ok, err = xpcall(function()
+                    SetTask("MainTask", "Nearby player | Finding an unvisited server")
+                    local browser = game:GetService("ReplicatedStorage"):FindFirstChild("__ServerBrowser")
+                    if not browser then error("Server browser unavailable") end
+                    local candidates = {}
+                    local seen = {}
+                    for page = 1, 10 do
+                      local success, servers = pcall(function() return browser:InvokeServer(page) end)
+                      if success and type(servers) == "table" then
+                        for id, info in pairs(servers) do
+                          id = tostring(id)
+                          if type(info) == "table" and id ~= tostring(game.JobId)
+                              and not visited[id] and not seen[id] then
+                            seen[id] = true
+                            table.insert(candidates, id)
+                          end
+                        end
+                      end
+                      if #candidates > 0 then break end
+                      task.wait(0.2)
+                    end
+                    if #candidates == 0 then
+                      SetTask("SideTask", "Nearby hop | No unvisited server; retry later")
+                      return
+                    end
+                    local id = candidates[math.random(1, #candidates)]
+                    -- Record attempts before teleport; never retry the same destination.
+                    remember(id)
+                    SetTask("MainTask", "Nearby player | Switching server")
+                    browser:InvokeServer("teleport", id)
+                    task.wait(15)
+                  end, debug.traceback)
+                  if not ok then warn("[NearbyHop] " .. tostring(err)) end
+                  busy = false
+                end)
+              end
             end
 
             local function fn39()
