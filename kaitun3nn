@@ -3294,6 +3294,9 @@ if true then
                 return hasChanged
               end
 
+              local lightningBoltCheckTick = -math.huge
+              local lightningBoltQuestReady = false
+
               HasLightningBolt = function(arg)
                 if ScriptStorage then
                   if ScriptStorage.Backpack then
@@ -3357,13 +3360,13 @@ if true then
 
                 local n7, fn36, ok, result
 
-                if canUseBypass then
+                if lightningBoltQuestReady then
                   if not arg then
                     return true
                   end
 
-                  if (os.clock() - submergedWaitTick) >= 0.5 then
-                    submergedWaitTick = os.clock()
+                  if (os.clock() - lightningBoltCheckTick) >= 0.5 then
+                    lightningBoltCheckTick = os.clock()
 
                     fn36 = function()
                       return Remotes.CommF_:InvokeServer("ElectroQuestState")
@@ -3371,22 +3374,22 @@ if true then
 
                     ok, result = pcall(fn36)
                     ok = ok and (((result == 2) or (result == 3)) or (result == 4))
-                    canUseBypass = ok
+                    lightningBoltQuestReady = ok
                   end
                 elseif arg then
-                  if (os.clock() - submergedWaitTick) >= 0.5 then
-                    submergedWaitTick = os.clock()
+                  if (os.clock() - lightningBoltCheckTick) >= 0.5 then
+                    lightningBoltCheckTick = os.clock()
 
                     fn36 = function()
                       return Remotes.CommF_:InvokeServer("ElectroQuestState")
                     end
 
                     ok, result = pcall(fn36)
-                    canUseBypass = ok and (((result == 2) or (result == 3)) or (result == 4))
+                    lightningBoltQuestReady = ok and (((result == 2) or (result == 3)) or (result == 4))
                   end
                 end
 
-                return canUseBypass
+                return lightningBoltQuestReady
               end
 
               IsMeleePurchaseComplete = function(meleeName)
