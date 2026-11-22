@@ -1,5 +1,5 @@
 getgenv().Configs = {
-    ["Key"] = "TRAU_CCA88E1C689FCDDA3F3EA2464242F438DCE93571784476AF"; -- Để trống để dùng key đã lưu hoặc nhập qua UI
+    ["Key"] = "TRAU_1373E93894D15DD2F3067169871CE855AEEB40C98917F677"; -- Để trống để dùng key đã lưu hoặc nhập qua UI
     ["Quest"] = {
         ["Evo Race V1"] = true;
         ["Evo Race V2"] = true;
