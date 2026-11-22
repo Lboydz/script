@@ -4626,63 +4626,153 @@ if true then
               end
 
               local function getCurrentClaimQuest()
-                local playerGui = game.Players.LocalPlayer:FindFirstChild("PlayerGui")
-                if not playerGui then
-                  return nil, nil
-                end
-
-                -- 1. Check TrackedQuestFrame
-                local trackedQuestFrame = playerGui:FindFirstChild("TrackedQuestFrame")
-                if trackedQuestFrame and trackedQuestFrame.Enabled and trackedQuestFrame:FindFirstChild("Frame") and trackedQuestFrame.Frame.Visible then
-                  local frame = trackedQuestFrame.Frame
-                  local headerContainer = frame:FindFirstChild("header")
-                  local headerLabel = headerContainer and headerContainer:FindFirstChild("textLabel")
-                  local headerText = nil
-                  if headerLabel then
-                    local innerLabel = headerLabel:FindFirstChild("textLabel")
-                    headerText = (innerLabel and innerLabel.Text) or headerLabel.Text
-                  end
-
-                  local descLabel = frame:FindFirstChild("description")
-                  local descText = (descLabel and descLabel.Text ~= "" and descLabel.Text) or nil
-
-                  local targetText = descText
-                  if not targetText and headerText then
-                    targetText = headerText:match("[Dd]efeat%s*%d*%s*(.-)$") or headerText:match("[Dd]efeat%s*(.-)$") or headerText
-                  end
-
-                  if targetText and targetText ~= "" then
-                    local cleanName = targetText:gsub("%s*%b()", ""):gsub("^%s*(.-)%s*$", "%1")
-                    local formattedName = string.gsub(cleanName, "Military ", "Mil. ")
-                    return formattedName, headerText or cleanName
+                local playerGui = LocalPlayer:FindFirstChild("PlayerGui")
+                if not playerGui then return nil, nil end
+                -- Dialogue temporarily disables TrackedQuestFrame without cancelling its quest.
+                local trackedScreen = playerGui:FindFirstChild("TrackedQuestFrame")
+                local trackedBody = trackedScreen and trackedScreen:FindFirstChild("Frame")
+                local dialogue = playerGui:FindFirstChild("DialogueGui")
+                local dialogueOpen = false
+                if dialogue and dialogue:IsA("ScreenGui") and dialogue.Enabled then
+                  for _, child in ipairs(dialogue:GetChildren()) do
+                    if child:IsA("GuiObject") and child.Visible then
+                      dialogueOpen = true
+                      break
+                    end
                   end
                 end
+                local dialogueMasksQuest = false
+                if dialogueOpen and trackedBody and trackedBody:IsA("GuiObject") and trackedBody.Visible then
+                  local progress = trackedBody:FindFirstChild("progress", true)
+                  local description = trackedBody:FindFirstChild("description", true)
+                  if progress and progress:IsA("TextLabel") and description and description:IsA("TextLabel") then
+                    local done, total = progress.Text:match("(%d+)%s*/%s*(%d+)")
+                    done, total = tonumber(done), tonumber(total)
+                    dialogueMasksQuest = done ~= nil and total ~= nil and total > 0
+                      and done < total and description.Text ~= ""
+                  end
+                end
+                local function visible(instance)
+                  local node = instance
+                  while node and node ~= playerGui do
+                    if node:IsA("GuiObject") and not node.Visible then return false end
+                    if node:IsA("ScreenGui") and not node.Enabled and not (node == trackedScreen and dialogueMasksQuest) then return false end
+                    node = node.Parent
+                  end
+                  return node == playerGui
+                end
+                local function normalize(value)
+                  local text = tostring(value):gsub("<[^>]+>", "")
+                  text = text:gsub("%b()", ""):gsub("%b[]", "")
+                  text = text:gsub("%d+%s*/%s*%d+", "")
+                  text = text:gsub("^%s*[Dd]efeat%s*%d*%s*", "")
+                  text = text:gsub("^%s*[Kk]ill%s*%d*%s*", "")
+                  text = text:gsub("^%s*Đánh bại%s*%d*%s*", "")
+                  text = text:gsub("Military ", "Mil. ")
+                  return text:gsub("%s+", " "):match("^%s*(.-)%s*$")
+                end
+                local roots = {}
+                local tracked = playerGui:FindFirstChild("TrackedQuestFrame")
+                local frame = tracked and tracked:FindFirstChild("Frame")
+                if frame and visible(frame) then table.insert(roots, frame) end
+                local main = playerGui:FindFirstChild("Main")
+                local legacy = main and main:FindFirstChild("Quest")
+                if legacy and visible(legacy) then table.insert(roots, legacy) end
+                if #roots == 0 then return nil, nil end
 
-                -- 2. Check Main.Quest
-                local mainGui = playerGui:FindFirstChild("Main")
-                if mainGui then
-                  local quest = mainGui:FindFirstChild("Quest")
-                  if quest and quest.Visible and quest:FindFirstChild("Container") then
-                    local questTitle = quest.Container:FindFirstChild("QuestTitle")
-                    local title = questTitle and questTitle:FindFirstChild("Title")
-                    local titleText = title and title.Text
-                    if titleText and titleText ~= "" and titleText ~= "QUEST" then
-                      local mobName = titleText:gsub("%s*[Dd]efeat%s*(%d*)%s*(.-)%s*%b()", "%2")
-                      if mobName and mobName ~= "" and mobName ~= titleText then
-                        local formattedName = string.gsub(mobName, "Military ", "Mil. ")
-                        return formattedName, titleText
+                local texts = {}
+                for _, root in ipairs(roots) do
+                  for _, label in ipairs(root:GetDescendants()) do
+                    if (label:IsA("TextLabel") or label:IsA("TextButton")) and visible(label) then
+                      if label.Text ~= "" then table.insert(texts, label.Text) end
+                    end
+                  end
+                end
+                -- Match known quest names exactly after stripping instruction/progress text.
+                -- Do not guess the active quest from the player's level or last request.
+                for _, raw in ipairs(texts) do
+                  local cleaned = normalize(raw)
+                  for _, group in pairs(QuestController.Quests or {}) do
+                    if type(group) == "table" then
+                      for _, quest in pairs(group) do
+                        if type(quest) == "table" and type(quest.Name) == "string" then
+                          local canonical = normalize(quest.Name)
+                          if cleaned == canonical or cleaned == canonical .. "s" then
+                            return quest.Name, raw
+                          end
+                          for monster in pairs(quest.Task or {}) do
+                            local name = normalize(monster)
+                            if cleaned == name or cleaned == name .. "s" then
+                              return quest.Name, raw
+                            end
+                          end
+                        end
                       end
                     end
                   end
                 end
-
-                return nil, nil
+                return "__QUEST_VISIBLE_UNREADABLE__", table.concat(texts, " | ")
               end
 
-              QuestController.GetCurrentClaimQuest = getCurrentClaimQuest
 
-              QuestController.StartQuest = function(arg, arg2)
-                return Remotes.CommF_:InvokeServer("StartQuest", arg, arg2)
+              do
+                local lastName, lastRaw, lastSeen
+                local missingSince
+                local lastRequest = -math.huge
+                local mismatchKey, mismatchSince
+                local rawAbandon = QuestController.AbandonQuest
+
+                QuestController.GetCurrentClaimQuest = function()
+                  local name, raw = getCurrentClaimQuest()
+                  local now = os.clock()
+                  if name then
+                    missingSince = nil
+                    if name ~= "__QUEST_VISIBLE_UNREADABLE__" then
+                      lastName, lastRaw, lastSeen = name, raw, now
+                    elseif lastName and now - lastSeen < 3 then
+                      return lastName, lastRaw
+                    end
+                    return name, raw
+                  end
+                  missingSince = missingSince or now
+                  if lastName and now - missingSince < 3 then
+                    return lastName, lastRaw
+                  end
+                  lastName, lastRaw, lastSeen = nil, nil, nil
+                  return nil, nil
+                end
+
+                QuestController.ConfirmFarmMismatch = function(actual, expected)
+                  local key = tostring(actual) .. "|" .. tostring(expected)
+                  if key ~= mismatchKey then
+                    mismatchKey, mismatchSince = key, os.clock()
+                    return false
+                  end
+                  return os.clock() - mismatchSince >= 3
+                end
+
+                QuestController.ClearFarmMismatch = function()
+                  mismatchKey, mismatchSince = nil, nil
+                end
+
+                QuestController.AbandonQuest = function()
+                  local result = rawAbandon()
+                  lastName, lastRaw, lastSeen, missingSince = nil, nil, nil, nil
+                  mismatchKey, mismatchSince = nil, nil
+                  return result
+                end
+
+                QuestController.StartQuest = function(id, index)
+                  -- Never re-claim while the quest reader still sees an active quest.
+                  if QuestController.GetCurrentClaimQuest() then return end
+                  local now = os.clock()
+                  missingSince = missingSince or now
+                  if now - missingSince < 3 or now - lastRequest < 5 then return end
+                  lastRequest = now
+                  warn("[QuestGuard v3] Requesting", id, index)
+                  return Remotes.CommF_:InvokeServer("StartQuest", id, index)
+                end
+                warn("[QuestGuard v3] Loaded: quest stability and claim cooldown enabled")
               end
             end
 
@@ -9513,6 +9603,17 @@ if true then
                         if currentQuest then
                           if v20 then
                             local v22, v23 = GetCurrentClaimQuest()
+                            if not v22 or v22 == v20 or v22 == (v20 .. "s") or v22 == "__QUEST_VISIBLE_UNREADABLE__" then
+                              QuestController.ClearFarmMismatch()
+                            elseif not QuestController.ConfirmFarmMismatch(v22, v20) then
+                              SetTask("MainTask", "Quest | Confirming target before switching")
+                              return
+                            end
+                            if v22 == "__QUEST_VISIBLE_UNREADABLE__" then
+                              SetTask("MainTask", "Quest visible but unreadable | Check console")
+                              resetCurrentQuest("quest_ui_unreadable", "[QuestUI] " .. tostring(v23))
+                              return
+                            end
                             if fn34() then
                               return
                             end
@@ -9677,6 +9778,17 @@ if true then
                           if questAllowMap[tostring(v18)] then
                             if stripQuestSpaces() then
                               local v22, v23 = GetCurrentClaimQuest()
+                            if not v22 or v22 == v20 or v22 == (v20 .. "s") or v22 == "__QUEST_VISIBLE_UNREADABLE__" then
+                              QuestController.ClearFarmMismatch()
+                            elseif not QuestController.ConfirmFarmMismatch(v22, v20) then
+                              SetTask("MainTask", "Quest | Confirming target before switching")
+                              return
+                            end
+                            if v22 == "__QUEST_VISIBLE_UNREADABLE__" then
+                              SetTask("MainTask", "Quest visible but unreadable | Check console")
+                              resetCurrentQuest("quest_ui_unreadable", "[QuestUI] " .. tostring(v23))
+                              return
+                            end
 
                               if v22 then
                                 if v22 ~= v20 then
